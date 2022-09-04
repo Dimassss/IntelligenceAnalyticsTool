@@ -19,4 +19,5 @@ from django.urls import path, include
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('file-storage/', include('file_storage.urls')),
+    path('statements/', include('statements.urls')),
 ]

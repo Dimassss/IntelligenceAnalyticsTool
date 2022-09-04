@@ -4,3 +4,5 @@ lib/*
 lib64/*
 docs/build/*
 .git/*
+*__pycache__*
+iat/*/migrations/*
