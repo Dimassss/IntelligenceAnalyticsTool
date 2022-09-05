@@ -1,0 +1,23 @@
+{
+  "name": "iat",
+  "version": "1.0.0",
+  "description": "Frontend of Intelligence Analytic Tool",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "generate": "nuxt generate",
+    "start": "nuxt start"
+  },
+  "author": "Dmytro Karpus",
+  "license": "ISC",
+  "dependencies": {
+    "nuxt": "^2.12.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.19.0",
+    "babel-loader": "^8.2.5",
+    "sass": "^1.54.8",
+    "sass-loader": "^10.3.1"
+  }
+}

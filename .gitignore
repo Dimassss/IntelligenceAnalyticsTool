@@ -6,3 +6,8 @@ docs/build/*
 .git/*
 *__pycache__*
 iat/*/migrations/*
+
+frontend/node_modules
+frontend/package-lock.json
+frontend/.nuxt
+frontend/dist
