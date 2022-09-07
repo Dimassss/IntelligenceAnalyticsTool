@@ -13,5 +13,12 @@ export default {
                 "@babel/transform-async-to-generator"
             ]
         },
+    },
+    modules: ['@nuxtjs/axios'],
+    axios: {
+        baseURL: 'http://localhost:8000/',
+        headers: {
+            common: {}
+        }
     }
 }

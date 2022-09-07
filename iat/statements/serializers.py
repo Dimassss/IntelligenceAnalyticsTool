@@ -14,12 +14,13 @@ class StatementSerializer(serializers.Serializer):
     veracity = serializers.IntegerField(max_value=100, min_value=0)
 
     def create(self, validated_data):
-        pk = validated_data['id']
         name = validated_data["name"]
         statement = validated_data["statement"]
         veracity = validated_data["veracity"]
 
-        s = Statement(name = name, statement = statement, veracity = veracity, id = pk)
+        s = Statement(name = name, statement = statement, veracity = veracity)
+        if 'id' in validated_data:
+            s.id = validated_data['id']
         
         return s
 

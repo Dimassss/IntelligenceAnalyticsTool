@@ -34,16 +34,15 @@ def get_statement(request, pk):
     return Response(StatementSerializer(st).data)
 
 
-#GET: /statements/get/list/?q=pk1,pk2,...,pkn
+#GET: /statements/get/list/?last_id=pk
 @api_view(["GET"])
-def get_statements(request):
-    if 'q' not in request.GET:
-        return Response([])
-
-    arr = request.GET.get("q").split(',')
-    pk_arr = [int(pk) for pk in arr]
-
-    st_arr = list(Statement.objects.filter(pk__in = pk_arr))
+def get_new_statements(request):
+    if 'last_id' not in request.GET:
+        st_arr = Statement.objects.all().order_by('-id')[:10]
+    else:
+        pk = int(request.GET.get("last_id"))
+        st_arr = Statement.objects.filter(pk__lt = pk).order_by('-id')[:10]
+    
     st_ser_arr = [StatementSerializer(st).data for st in st_arr]
 
     return Response(st_ser_arr)
