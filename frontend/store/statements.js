@@ -9,7 +9,7 @@ export const getters = {
         return state.statements
     },
     getCurrentStatement(state){
-        return state.current_statement
+        return state.currentStatement
     }
 }
 
@@ -20,10 +20,16 @@ export const mutations = {
         
         if (lastId != Infinity)
             state.lastId = lastId
+    },
+    prependNewStatement(state, st){
+        if(!st || st.id == undefined) {
+            throw "Statement which you add has not id. You must add only that statements which are in the database"
+        }
 
-        return state
+        state.statements = [st, ...state.statements]
     },
     setCurrentStatement(state, st){
+        console.log("Statement setted", st)
         state.currentStatement = st
     },
     setLastId(state, id){
@@ -51,5 +57,11 @@ export const actions = {
         
         if(st) commit('setCurrentStatement', st)
         else throw `Statement with id ${id} not found`
+    },
+    async createStatement({ commit }, newSt){
+        let st = await this.$axios.$post('/statements/create/', newSt)
+        
+        commit('setCurrentStatement', st)
+        commit('prependNewStatement', st)
     }
 }

@@ -8,7 +8,7 @@
                 Veracity is {{ st.veracity }}<br/>
                 ID: {{ st.id }}
             </p>
-            <p>{{ st.statement }}</p>
+            <p class="desc">{{ st.statement }}</p>
         </div>
         <div v-else>Statement is loading {{ st ? st.id : 'lol' }}</div>
     </div>
@@ -17,7 +17,11 @@
 <style lang="scss" scoped>
     .info {
         color: #aaaaaa;
-        font-size: 8px;
+        font-size: 14px;
+    }
+
+    .desc {
+        font-size: 18px;
     }
 </style>
 

@@ -1,5 +1,6 @@
 <template>
     <div>
+        <nuxt-link to="statement/create">Create Statement</nuxt-link>
         <table>
             <tr>
                 <th>ID</th>
