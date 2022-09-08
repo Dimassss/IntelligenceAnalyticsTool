@@ -1,16 +1,22 @@
 <template>
     <div>
         <nuxt-link to="/">Back</nuxt-link>
-        <div v-if="st != null">
-            <h1>{{ st.name }}</h1>
+        <br/><br/><br/>
+        <div v-if="statement != null">
+            <input v-model="statement.name" placeholder="Title"/><br/>
             <p class="info">
-                {{ st.created_at }}<br/>
-                Veracity is {{ st.veracity }}<br/>
-                ID: {{ st.id }}
+                {{ statement.created_at }}<br/>
+                Veracity is {{ statement.veracity }} 
+                <input v-model="statement.veracity" type="range" min=0 max=100 step=1/><br/>
+                ID: {{ statement.id }}
             </p>
-            <p class="desc">{{ st.statement }}</p>
+            <div class="desc">
+                <textarea v-model="statement.statement" rows="10" cols="70"></textarea>
+            </div>
+
+            <button @click="saveChanges">Save Changes</button> 
         </div>
-        <div v-else>Statement is loading {{ st ? st.id : 'lol' }}</div>
+        <div v-else>Statement ID:{{ $route.params.id }} is loading</div>
     </div>
 </template>
 
@@ -26,20 +32,26 @@
 </style>
 
 <script>
-import { mapGetters } from 'vuex'
 export default {
     data(){
-        return {}
+        return {
+            statement: null
+        }
     },
-    computed: {
-        ...mapGetters({
-            st: 'statements/getCurrentStatement'
-        })
+    computed: {},
+    methods: {
+        async saveChanges(){
+            this.$store.dispatch('statements/saveStatement', this.statement)
+        }
     },
-    async fetch({ params, store}){
+    async asyncData({ params, store }){
         const id = +params.id
-
         await store.dispatch('statements/loadStatement', id)
+        let statement = JSON.parse(JSON.stringify( store.getters["statements/getCurrentStatement"] ))
+        
+        return {
+            statement
+        }
     }
 }
 </script>

@@ -1,3 +1,5 @@
+const cloneObj = obj => JSON.parse(JSON.stringify(obj))
+
 export const state = () => ({
     statements: [],
     currentStatement: null,
@@ -22,18 +24,31 @@ export const mutations = {
             state.lastId = lastId
     },
     prependNewStatement(state, st){
+        const clonedSt = cloneObj(st)
+
         if(!st || st.id == undefined) {
             throw "Statement which you add has not id. You must add only that statements which are in the database"
         }
 
-        state.statements = [st, ...state.statements]
+        state.statements = [clonedSt, ...state.statements]
     },
     setCurrentStatement(state, st){
-        console.log("Statement setted", st)
-        state.currentStatement = st
+        const clonedSt = cloneObj(st)
+        state.currentStatement = clonedSt
     },
     setLastId(state, id){
         state.lastId = id
+    },
+    updateStatement(state, st){
+        const clonedSt = cloneObj(st)
+        const ids = state.statements.map(el => el.id)
+        const index = ids.indexOf(cloneSt.id);
+
+        if(index > -1){
+            state.statements = state.statements.map(el => (el.id == clonedSt.id ? clonedSt : el))
+        } else {
+            state.statements = [...state.statements, clonedSt]
+        }
     }
 }
 
@@ -63,5 +78,10 @@ export const actions = {
         
         commit('setCurrentStatement', st)
         commit('prependNewStatement', st)
+    },
+    async saveStatement({ commit }, st){
+        await this.$axios.$put('/statements/save/', st)
+
+        commit('setCurrentStatement', st)
     }
 }
