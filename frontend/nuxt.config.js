@@ -14,11 +14,22 @@ export default {
             ]
         },
     },
-    modules: ['@nuxtjs/axios'],
+    modules: [
+        '@nuxtjs/axios',
+        '@chakra-ui/nuxt',
+        '@nuxtjs/emotion'
+    ],
     axios: {
         baseURL: 'http://localhost:8000/',
         headers: {
             common: {}
+        }
+    },
+    chakra: {
+        extendTheme: {
+            colors: {
+                brand: { /* ... */ }
+            }
         }
     }
 }
