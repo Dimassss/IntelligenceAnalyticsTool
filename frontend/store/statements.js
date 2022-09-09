@@ -42,12 +42,14 @@ export const mutations = {
     updateStatement(state, st){
         const clonedSt = cloneObj(st)
         const ids = state.statements.map(el => el.id)
-        const index = ids.indexOf(cloneSt.id);
+        const index = ids.indexOf(clonedSt.id);
+        const stArr = [...state.statements]
 
         if(index > -1){
-            state.statements = state.statements.map(el => (el.id == clonedSt.id ? clonedSt : el))
+            stArr[index] = clonedSt
+            state.statements = [...stArr]
         } else {
-            state.statements = [...state.statements, clonedSt]
+            state.statements = [clonedSt, ...stArr]
         }
     }
 }
@@ -83,5 +85,6 @@ export const actions = {
         await this.$axios.$put('/statements/save/', st)
 
         commit('setCurrentStatement', st)
+        commit('updateStatement', st)
     }
 }
