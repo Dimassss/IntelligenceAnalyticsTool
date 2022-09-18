@@ -1,6 +1,14 @@
 bin/*
 include/*
 lib/*
-lib64/*
+lib64
 docs/build/*
 .git/*
+*__pycache__*
+iat/*/migrations/*
+
+frontend/node_modules
+frontend/node_modules/**
+frontend/package-lock.json
+frontend/.nuxt
+frontend/dist
