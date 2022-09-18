@@ -6,9 +6,11 @@ docs/build/*
 .git/*
 *__pycache__*
 iat/*/migrations/*
+.vscode
 
 frontend/node_modules
 frontend/node_modules/**
 frontend/package-lock.json
-frontend/.nuxt
+frontend/.next
 frontend/dist
+frontend-
