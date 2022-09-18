@@ -20,7 +20,7 @@ def create_statement(request):
         return Response(StatementSerializer(st).data)
 
     return Response({
-        'errors': file_form_serializer.errors
+        'errors': statement_serializer.errors
     })
 
 

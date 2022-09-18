@@ -12,4 +12,5 @@ class Statement(models.Model):
             MinValueValidator(0, "Veracity can not be negative")
         ]
     )
+    rel_statements = models.ManyToManyField('self', default = [])
 
