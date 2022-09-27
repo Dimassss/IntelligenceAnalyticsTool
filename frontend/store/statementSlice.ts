@@ -4,13 +4,13 @@ import axios from '../plugins/axios'
 
 import { AppState } from "./store";
 import clone from "../lib/clone";
-import { Statement } from "~~/types/model/Statement";
+import { StatementType } from "../types/model/Statement";
 
 
 //State
 export interface StatementState {
-    statements: Statement[],
-    currentStatement: Statement,
+    statements: StatementType[],
+    currentStatement: StatementType,
     lastId: number
 }
 
@@ -21,21 +21,21 @@ const initialState: StatementState = {
 };
 
 //Async thunks
-export const loadNewStatements = createAsyncThunk('statements/loadNewStatements', async (lastId: number | null): Promise<Statement[]> => {
+export const loadNewStatements = createAsyncThunk('statements/loadNewStatements', async (lastId: number | null): Promise<StatementType[]> => {
         /*
             Load next array of elements startion from lastId up to 20 elements
         */
         const url = 'statements/get/list/' + (lastId == null ? '' : `?last_id=${lastId}`)
         
         let res = await axios.get(url)
-        let stArr: Statement[] = res.data
+        let stArr: StatementType[] = res.data
 
         return stArr
     })
 
 export const loadStatement = createAsyncThunk('statements/loadStatement', async (id: number) => {
         const res = await axios.get(`/statements/get/${id}/`)
-        const st: Statement = res.data
+        const st: StatementType = res.data
         if(st){
             return st
         } else {
@@ -53,14 +53,14 @@ export const loadStatement = createAsyncThunk('statements/loadStatement', async 
         }
     }*/)
 
-export const createStatement = createAsyncThunk('statements/createStatement', async (newSt: Statement) => {
+export const createStatement = createAsyncThunk('statements/createStatement', async (newSt: StatementType) => {
         const res = await axios.post('/statements/create/', newSt)
-        let st: Statement = res.data
+        let st: StatementType = res.data
 
         return st
     })
     
-export const saveStatement = createAsyncThunk('statements/saveStatement', async (st: Statement) => {
+export const saveStatement = createAsyncThunk('statements/saveStatement', async (st: StatementType) => {
     axios.put('statements/save/', st)
     return st
 })
@@ -71,7 +71,7 @@ export const statementSlice = createSlice({
     initialState,
     reducers: {
         appendNewStatements(state: StatementState, action){
-            const stArr: Statement[] = action.payload
+            const stArr: StatementType[] = action.payload
             state.statements = [...state.statements, ...stArr]
             let lastId = Math.min(...(stArr.map(el => el.id)))
             
@@ -79,7 +79,7 @@ export const statementSlice = createSlice({
                 state.lastId = lastId
         },
         prependNewStatement(state: StatementState, action){
-            const st: Statement = clone<Statement>(action.payload)
+            const st: StatementType = clone<StatementType>(action.payload)
     
             if(!st || st.id == undefined) {
                 throw "Statement which you add has not id. You must add only that statements which are in the database"
@@ -88,14 +88,14 @@ export const statementSlice = createSlice({
             state.statements = [st, ...state.statements]
         },
         setCurrentStatement(state: StatementState, action){
-            const st: Statement = clone<Statement>(action.payload)
+            const st: StatementType = clone<StatementType>(action.payload)
             state.currentStatement = st
         },
         setLastId(state, action){
             state.lastId = action.payload
         },
         updateStatement(state: StatementState, action){
-            const st = clone<Statement>(action.payload)
+            const st = clone<StatementType>(action.payload)
             const ids = state.statements.map(el => el.id)
             const index = ids.indexOf(st.id);
             const stArr = [...state.statements]
@@ -118,7 +118,7 @@ export const statementSlice = createSlice({
             };
         })
         .addCase(loadNewStatements.fulfilled, (state, action) => {
-            let stArr: Statement[] = [...state.statements, ...action.payload]
+            let stArr: StatementType[] = [...state.statements, ...action.payload]
 
             const ids = []
             stArr = stArr.filter(el => {
@@ -133,12 +133,12 @@ export const statementSlice = createSlice({
             state.statements = stArr
         })
         .addCase(loadStatement.fulfilled, (state, action) => {
-            let st: Statement = action.payload
+            let st: StatementType = action.payload
 
             state.currentStatement = st
         })
         .addCase(createStatement.fulfilled, (state, action) => {
-            const st: Statement = action.payload
+            const st: StatementType = action.payload
             const ind: number = state.statements.map(el => el.id).indexOf(st.id)
 
             state.currentStatement = st
@@ -158,7 +158,7 @@ export const statementSlice = createSlice({
             if(st && st.id) {
                 const ind = state.statements.map(el => el.id).indexOf(st.id)
                 if(ind > -1) {
-                    let list: Statement[] = clone(state.statements)
+                    let list: StatementType[] = clone(state.statements)
                     list[ind] = st
                     state.statements = list
                 }

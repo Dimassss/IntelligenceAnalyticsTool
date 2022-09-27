@@ -1,4 +1,4 @@
-export interface Statement {
+export interface StatementType {
     id?: number, 
     name: string, 
     veracity: number, 
