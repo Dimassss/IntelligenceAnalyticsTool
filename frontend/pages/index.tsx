@@ -1,4 +1,4 @@
-import { Text, IconButton } from '@chakra-ui/react'
+import { Text, IconButton, Flex } from '@chakra-ui/react'
 import { Grid, GridItem } from '@chakra-ui/react'
 import { useSelector, useDispatch } from "react-redux"
 import { useEffect, useRef, useState } from 'react'
@@ -10,9 +10,10 @@ import type { StatementType } from '../types/model/Statement'
 import { loadNewStatements, getAllStatements, getLastId, getCurrentStatement, setCurrentStatement, saveStatement, createStatement } from '../store/statementSlice'
 import Statement from '../components/statement/Statement'
 import StatementForm from '../components/statement/forms/StatementForm'
-import { FaPlus, FaRegSave } from 'react-icons/fa'
+import { FaPlus, FaQuestion, FaRegSave } from 'react-icons/fa'
 import { timeToString } from '../lib/formating'
 import StatementGraph from '../components/statement/StatementGraph'
+import HelpWindow from '../components/HelpWindow';
 
 
 export default function Home() {
@@ -23,6 +24,7 @@ export default function Home() {
   const [doSubmitStatementForm, setDoSubmitStatementForm] = useState(false)
   const [previewStatement, setPreviewStatement] = useState({} as StatementType)
   const [graphConf, setGraphConf] = useState({width:0, height: 0})
+  const [openHelpWindow, setOpenHelpWindow] = useState(false)
   
   let selectNode = (node: StatementType) => {
     dispatch(setCurrentStatement(node))
@@ -46,87 +48,110 @@ export default function Home() {
     }
   }
 
-  return (<Grid templateColumns='repeat(12, 1fr)' gap={2}>
-    <GridItem colSpan={8}>
-      <StatementGraph 
-        statements={list} 
-        width={graphConf.width} 
-        height={graphConf.height} 
-        selectedNode={selectedStatement} 
-        onClick={(e, node) => setPreviewStatement(node)}
-        onDblClick={(e, node) => {
-          selectNode(node)
-        }}
-      />
-    </GridItem>
-    <GridItem colSpan={4}>
-      <IconButton 
-          icon={<FaPlus/>}
-          aria-label="Main page"  
-          variant-color="green" 
-          rounded="0" 
-          roundedBottomRight='md'
-          onClick={() => selectNode({
-            name: '',
-            veracity: 0,
-            statement: '',
-            use_statements: []
-          })}
-      />
-      {selectedStatement 
-        ? (<>
+  return (<>
+    <HelpWindow toOpen={openHelpWindow} onClose={() => setOpenHelpWindow(false)}/>
+    <Grid templateColumns='repeat(12, 1fr)' gap={2}>
+      <GridItem colSpan={8}>
+        <StatementGraph 
+          statements={list} 
+          width={graphConf.width} 
+          height={graphConf.height} 
+          selectedNode={selectedStatement} 
+          onClick={(e, node) => setPreviewStatement(node)}
+          onDblClick={(e, node) => {
+            selectNode(node)
+          }}
+        />
+      </GridItem>
+      <GridItem colSpan={4}>
+        <Flex flexDirection={'row'} justify={'space-between'}>
+          <Flex>
             <IconButton 
-              icon={<FaRegSave/>}
+                icon={<FaPlus/>}
+                aria-label="Main page"  
+                variant-color="green" 
+                rounded="0" 
+                roundedBottomRight='md'
+                onClick={() => selectNode({
+                  name: '',
+                  veracity: 0,
+                  statement: '',
+                  use_statements: []
+                })}
+            />
+            {selectedStatement 
+              ? (<IconButton 
+                    icon={<FaRegSave/>}
+                    aria-label="Main page"  
+                    variant-color="green" 
+                    rounded="0" 
+                    roundedBottomRight='md'
+                    onClick={() => setDoSubmitStatementForm(true)}
+                  />)
+              : ('')
+            }
+          </Flex>
+
+          <Flex>
+            <IconButton 
+              icon={<FaQuestion/>}
               aria-label="Main page"  
               variant-color="green" 
               rounded="0" 
               roundedBottomRight='md'
-              onClick={() => setDoSubmitStatementForm(true)}
+              alignSelf={'flex-start'}
+              onClick={() => setOpenHelpWindow(true)}
             />
-            <Text ml='2' color="grey">{ timeToString(selectedStatement.created_at) }</Text>
-            <StatementForm 
-              onSubmit={onStatementFormSubmit} 
-              doSubmit={doSubmitStatementForm} 
-              statement={selectedStatement}
-            />
-          </>)
-        : (<p>Select node with double click or create new one with plus button.</p>)
-      }
-    </GridItem>
-    <GridItem colSpan={8}>
-      <Grid templateColumns='repeat(12, 1fr)' gap={2}>
-        {list.map((item: StatementType) => (
-          <GridItem 
-            onClick={
-              debounce(e => {
-                if(e.detail >= 2) {
-                  selectNode(item)
-                } else {
-                  setPreviewStatement(item);
-                }
-              }, 150, true)
-            }
-            colSpan={4} 
-            key={item.id} 
-            p={2} 
-            className={[
-              styles['statement-tile'], 
-              previewStatement.id == item.id ? styles['previewed'] : undefined, 
-              selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
-            ].filter(el => el).join(' ')}
-          >
-            <p>{item.name}</p>
-          </GridItem>))
+          </Flex>
+        </Flex>
+
+        {selectedStatement 
+          ? (<>
+              <Text ml='2' color="grey">{ timeToString(selectedStatement.created_at) }</Text>
+              <StatementForm 
+                onSubmit={onStatementFormSubmit} 
+                doSubmit={doSubmitStatementForm} 
+                statement={selectedStatement}
+              />
+            </>)
+          : (<p>Select node with double click or create new one with plus button.</p>)
         }
-      </Grid>
-    </GridItem>
-    <GridItem colSpan={4}>
-      {
-        previewStatement.id === undefined 
-        ? (<p>Select</p>)
-        : (<Statement statement={previewStatement} />) 
-      }
-    </GridItem>
-  </Grid>)
+      </GridItem>
+      <GridItem colSpan={8}>
+        <Grid templateColumns='repeat(12, 1fr)' gap={2}>
+          {list.map((item: StatementType) => (
+            <GridItem 
+              onClick={
+                debounce(e => {
+                  if(e.detail >= 2) {
+                    selectNode(item)
+                  } else {
+                    setPreviewStatement(item);
+                  }
+                }, 150, true)
+              }
+              colSpan={4} 
+              key={item.id} 
+              p={2} 
+              className={[
+                styles['statement-tile'], 
+                previewStatement.id == item.id ? styles['previewed'] : undefined, 
+                selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
+              ].filter(el => el).join(' ')}
+            >
+              <p>{item.name}</p>
+            </GridItem>))
+          }
+        </Grid>
+      </GridItem>
+      <GridItem colSpan={4}>
+        {
+          previewStatement.id === undefined 
+          ? (<p>Select</p>)
+          : (<Statement statement={previewStatement} />) 
+        }
+      </GridItem>
+    </Grid>
+  </>)
 }
 
