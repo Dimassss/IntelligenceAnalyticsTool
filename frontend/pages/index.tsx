@@ -271,7 +271,7 @@ export default function Home() {
             className={[
               styles['statement-tile'], 
               previewStatement.id == item.id ? styles['previewed'] : undefined, 
-              selectedStatement.id == item.id ? styles['selected'] : undefined
+              selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
             ].filter(el => el).join(' ')}
           >
             <p>{item.name}</p>
