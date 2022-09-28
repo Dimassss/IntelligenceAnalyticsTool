@@ -3,5 +3,6 @@ export interface StatementType {
     name: string, 
     veracity: number, 
     created_at?: string, 
-    statement: string
+    statement: string,
+    use_statements: number[]
 }

@@ -49,6 +49,12 @@ function StatementForm({onSubmit, statement, doSubmit}: Props){
         }
     }, [doSubmit])
 
+    useEffect(() => {
+        setName(statement.name ? statement.name : '')
+        setStatement(statement.statement ? statement.statement : '')
+        setVeracity(statement.veracity ? statement.veracity : 0)
+    }, [statement])
+
     return (<Flex
         mt='2'
         p='2'
