@@ -65,6 +65,13 @@ export const saveStatement = createAsyncThunk('statements/saveStatement', async 
     return st
 })
 
+export const deleteCurrentStatement = createAsyncThunk('statements/deleteStatement', async (arg, { getState, dispatch }) => {
+    const state = getState() as AppState
+    const st = state.statements.currentStatement
+    dispatch(deleteStatement(st))
+    //axios.delete(`statements/delete/${st.id}`)
+})
+
 //Slice
 export const statementSlice = createSlice({
     name: "statements",
@@ -106,6 +113,19 @@ export const statementSlice = createSlice({
             } else {
                 state.statements = [st, ...stArr]
             }
+        },
+        deleteStatement(state: StatementState, action){
+            const st = action.payload
+            
+            if(!st) {
+                return;
+            }
+
+            if(state.currentStatement && state.currentStatement.id === st.id) {
+                state.currentStatement = null
+            }
+
+            state.statements = state.statements.filter(el => el.id !== st.id)
         }
     },
     extraReducers(builder) {
@@ -164,6 +184,7 @@ export const statementSlice = createSlice({
                 }
             }
         })
+        .addCase(deleteCurrentStatement.fulfilled, (state, action) => {})
     }
 });
 
@@ -174,7 +195,8 @@ export const {
     prependNewStatement,
     setCurrentStatement,
     setLastId,
-    updateStatement 
+    updateStatement,
+    deleteStatement
 } = statementSlice.actions;
 
 export const getAllStatements = (state: AppState) => state.statements.statements;

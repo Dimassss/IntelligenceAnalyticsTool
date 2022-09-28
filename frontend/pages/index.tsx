@@ -7,10 +7,10 @@ import debounce from 'lodash.debounce';
 import styles from '../styles/statement/Statement-tile.module.scss'
 
 import type { StatementType } from '../types/model/Statement'
-import { loadNewStatements, getAllStatements, getLastId, getCurrentStatement, setCurrentStatement, saveStatement, createStatement } from '../store/statementSlice'
+import { loadNewStatements, getAllStatements, getLastId, getCurrentStatement, setCurrentStatement, saveStatement, createStatement, deleteCurrentStatement } from '../store/statementSlice'
 import Statement from '../components/statement/Statement'
 import StatementForm from '../components/statement/forms/StatementForm'
-import { FaPlus, FaQuestion, FaRegSave } from 'react-icons/fa'
+import { FaPlus, FaQuestion, FaRegSave, FaTrash } from 'react-icons/fa'
 import { timeToString } from '../lib/formating'
 import StatementGraph from '../components/statement/StatementGraph'
 import HelpWindow from '../components/HelpWindow';
@@ -22,12 +22,18 @@ export default function Home() {
   const selectedStatement = useSelector(getCurrentStatement)
   const lastId = useSelector(getLastId)
   const [doSubmitStatementForm, setDoSubmitStatementForm] = useState(false)
-  const [previewStatement, setPreviewStatement] = useState({} as StatementType)
+  const [previewStatement, setPreviewStatement] = useState(null as StatementType)
   const [graphConf, setGraphConf] = useState({width:0, height: 0})
   const [openHelpWindow, setOpenHelpWindow] = useState(false)
   
   let selectNode = (node: StatementType) => {
     dispatch(setCurrentStatement(node))
+  }
+  let removeNode = () => {
+    dispatch(deleteCurrentStatement() as any)
+    if(previewStatement.id == selectedStatement.id) {
+      setPreviewStatement(null)
+    }
   }
 
   useEffect(() => {
@@ -68,7 +74,7 @@ export default function Home() {
           <Flex>
             <IconButton 
                 icon={<FaPlus/>}
-                aria-label="Main page"  
+                aria-label="Create Node"  
                 variant-color="green" 
                 rounded="0" 
                 roundedBottomRight='md'
@@ -80,14 +86,24 @@ export default function Home() {
                 })}
             />
             {selectedStatement 
-              ? (<IconButton 
+              ? (<>
+                <IconButton 
                     icon={<FaRegSave/>}
-                    aria-label="Main page"  
+                    aria-label="Save Node"  
                     variant-color="green" 
                     rounded="0" 
                     roundedBottomRight='md'
                     onClick={() => setDoSubmitStatementForm(true)}
-                  />)
+                  />
+                <IconButton 
+                    icon={<FaTrash/>}
+                    aria-label="Delete Node"  
+                    variant-color="green" 
+                    rounded="0" 
+                    roundedBottomRight='md'
+                    onClick={() => removeNode()}
+                  />
+              </>)
               : ('')
             }
           </Flex>
@@ -135,7 +151,7 @@ export default function Home() {
               p={2} 
               className={[
                 styles['statement-tile'], 
-                previewStatement.id == item.id ? styles['previewed'] : undefined, 
+                previewStatement && previewStatement.id == item.id ? styles['previewed'] : undefined, 
                 selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
               ].filter(el => el).join(' ')}
             >
@@ -146,7 +162,7 @@ export default function Home() {
       </GridItem>
       <GridItem colSpan={4}>
         {
-          previewStatement.id === undefined 
+          !previewStatement 
           ? (<p>Select</p>)
           : (<Statement statement={previewStatement} />) 
         }
