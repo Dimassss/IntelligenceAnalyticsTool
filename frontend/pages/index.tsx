@@ -164,7 +164,7 @@ export default function Home() {
       <GridItem colSpan={4}>
         {
           !previewStatement 
-          ? (<p>Select</p>)
+          ? ('')
           : (<Statement statement={previewStatement} />) 
         }
       </GridItem>

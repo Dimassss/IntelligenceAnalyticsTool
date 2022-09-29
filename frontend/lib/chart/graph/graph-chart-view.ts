@@ -142,22 +142,13 @@ const createStatementEdgeDrawer = () => {
 const createStatementVertixSourceGetters = () => {
     return (
         nodeTarget: NodeType, 
-        vertixToNodeIndexMap: VertixToNodeIndexMapType, 
-        vertixes: {
-            [nodeType: string]: VertixType[]
-        }
+        getVertixOfNode: (node: NodeType) => VertixType
     ) => {
         const node = nodeTarget as StatementType
 
         const sources = node.use_statements.map(n_id => {
-            if(!('statement' in vertixToNodeIndexMap && n_id in vertixToNodeIndexMap['statement'])){
-                return undefined
-            }
-
-            const j = vertixToNodeIndexMap['statement'][n_id]
-
-            return vertixes[nodeTarget.type][j]
-        }).filter(el => el !== undefined)
+            return getVertixOfNode({id: n_id, type: 'statement'})
+        }).filter(el => el != null)
 
         return sources
     }

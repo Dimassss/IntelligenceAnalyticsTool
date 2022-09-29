@@ -36,10 +36,7 @@ export type ChartConfigType = {
     vertixSourcesGetters: {
         [nodeType: string]: (
             nodeTarget: NodeType, 
-            vertixToNodeIndexMap: VertixToNodeIndexMapType, 
-            vertixes: {
-                [nodeType: string]: VertixType[]
-            }
+            getVertixOfNode: (node: NodeType) => VertixType
         ) => VertixType[]
     },
     edgeBuilders: {

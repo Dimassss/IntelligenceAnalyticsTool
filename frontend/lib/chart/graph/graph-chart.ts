@@ -60,6 +60,17 @@ export const createChart = ({key, useCache = true}) => {
      * preparing helper functions
      */
     
+    const getVertixOfNode = (node: NodeType) => {
+        if(!(node && 'type' in node && typeof node.id == 'number')) return null;
+        if(!(node.type in chart.state.vertixToNodeIndexMap)) return null;
+        if(!(node.id in chart.state.vertixToNodeIndexMap[node.type])) return null;
+
+        const i = chart.state.vertixToNodeIndexMap[node.type][node.id]
+        const vertix = chart.state.vertixes[node.type][i]
+
+        return vertix
+    }
+
     const nodeToVerix = (node: NodeType) => {
         let r = chart.config.vertixes[node.type].radius.default
         if(chart.state.selectedNode && node.id === chart.state.selectedNode.id)
@@ -103,13 +114,14 @@ export const createChart = ({key, useCache = true}) => {
     }
 
     const rebuildVertix = (n: NodeType) => {
-        const j = chart.state.vertixes[n.type].map(el => el.node.id).indexOf(n.id)
+        const j = chart.state.vertixToNodeIndexMap[n.type][n.id]
         chart.state.vertixes[n.type][j] = nodeToVerix(n)
     }
 
     const rebuildEdgesToNode = (n: NodeType) => {
-        const i = chart.state.vertixToNodeIndexMap[n.type][n.id]
-        const target = chart.state.vertixes[n.type][i]
+        const target = getVertixOfNode(n)
+
+        if(target == null) return;
 
         const sourcesGetter = chart.config.vertixSourcesGetters[n.type]
 
@@ -117,8 +129,7 @@ export const createChart = ({key, useCache = true}) => {
             target, 
             sources: sourcesGetter(
                 n, 
-                chart.state.vertixToNodeIndexMap, 
-                chart.state.vertixes
+                getVertixOfNode
             )
         })
     }
@@ -185,8 +196,7 @@ export const createChart = ({key, useCache = true}) => {
                     target, 
                     sources: sourcesGetter(
                         node, 
-                        chart.state.vertixToNodeIndexMap, 
-                        chart.state.vertixes
+                        getVertixOfNode
                     )
                 })
             })
