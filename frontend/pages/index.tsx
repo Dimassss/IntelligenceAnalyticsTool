@@ -10,10 +10,10 @@ import type { StatementType } from '../types/model/Statement'
 import { loadNewStatements, getAllStatements, getLastId, getCurrentStatement, setCurrentStatement, saveStatement, createStatement, deleteCurrentStatement } from '../store/statementSlice'
 import Statement from '../components/statement/Statement'
 import StatementForm from '../components/statement/forms/StatementForm'
-import { FaPlus, FaQuestion, FaRegSave, FaTrash } from 'react-icons/fa'
+import { FaLocationArrow, FaPlus, FaQuestion, FaRegSave, FaShareAlt, FaTrash } from 'react-icons/fa'
 import { timeToString } from '../lib/formating'
-import StatementGraph from '../components/statement/StatementGraph'
 import HelpWindow from '../components/HelpWindow';
+import GraphEditor from '../components/GraphEditor';
 
 
 export default function Home() {
@@ -23,7 +23,7 @@ export default function Home() {
   const lastId = useSelector(getLastId)
   const [doSubmitStatementForm, setDoSubmitStatementForm] = useState(false)
   const [previewStatement, setPreviewStatement] = useState(null as StatementType)
-  const [graphConf, setGraphConf] = useState({width:0, height: 0})
+  const [graphConf, setGraphConf] = useState({width:1, height: 1})
   const [openHelpWindow, setOpenHelpWindow] = useState(false)
   
   let selectNode = (node: StatementType) => {
@@ -31,14 +31,14 @@ export default function Home() {
   }
   let removeNode = () => {
     dispatch(deleteCurrentStatement() as any)
-    if(previewStatement.id == selectedStatement.id) {
+    if(previewStatement && previewStatement.id == selectedStatement.id) {
       setPreviewStatement(null)
     }
   }
 
   useEffect(() => {
     setGraphConf({
-      width: window.innerWidth / 12 * 7.95,
+      width: window.innerWidth * 8 / 12,
       height: window.innerHeight - 400
     })
 
@@ -46,11 +46,12 @@ export default function Home() {
   }, [])
 
   const onStatementFormSubmit = (st: StatementType) => {
+    const stWithType = {...st, type: 'statement'}
     setDoSubmitStatementForm(false)
     if(st.id === undefined){
-      dispatch(createStatement(st) as any)
+      dispatch(createStatement(stWithType) as any)
     } else {
-      dispatch(saveStatement(st) as any)
+      dispatch(saveStatement(stWithType) as any)
     }
   }
 
@@ -58,15 +59,15 @@ export default function Home() {
     <HelpWindow toOpen={openHelpWindow} onClose={() => setOpenHelpWindow(false)}/>
     <Grid templateColumns='repeat(12, 1fr)' gap={2}>
       <GridItem colSpan={8}>
-        <StatementGraph 
-          statements={list} 
-          width={graphConf.width} 
-          height={graphConf.height} 
-          selectedNode={selectedStatement} 
-          onClick={(e, node) => setPreviewStatement(node)}
-          onDblClick={(e, node) => {
-            selectNode(node)
+        <GraphEditor
+          width={graphConf.width}
+          height={graphConf.height}
+          selectedNode={selectedStatement}
+          previewedNode={previewStatement}
+          onPreviewNode={(node) => {
+            setPreviewStatement(node)
           }}
+          onSelectNode={selectNode}
         />
       </GridItem>
       <GridItem colSpan={4}>

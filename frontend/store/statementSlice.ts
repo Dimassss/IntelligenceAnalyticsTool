@@ -28,30 +28,20 @@ export const loadNewStatements = createAsyncThunk('statements/loadNewStatements'
         const url = 'statements/get/list/' + (lastId == null ? '' : `?last_id=${lastId}`)
         
         let res = await axios.get(url)
-        let stArr: StatementType[] = res.data
+        let stArr: StatementType[] = res.data.map(el => ({...el, type: 'statement'}))
 
         return stArr
     })
 
 export const loadStatement = createAsyncThunk('statements/loadStatement', async (id: number) => {
         const res = await axios.get(`/statements/get/${id}/`)
-        const st: StatementType = res.data
+        const st: StatementType = {...res.data, type: 'statement'}
         if(st){
             return st
         } else {
             throw `Statement with id ${id} not found`
         }
-    }/*,
-    {
-        condition(id, { getState }) {
-            const { statements } = getState() as StatementState   
-            let st = statements.find(el => el.id == id);
-
-            alert("here")
-            
-            return !st
-        }
-    }*/)
+    })
 
 export const createStatement = createAsyncThunk('statements/createStatement', async (newSt: StatementType) => {
         const res = await axios.post('/statements/create/', newSt)
@@ -69,7 +59,7 @@ export const deleteCurrentStatement = createAsyncThunk('statements/deleteStateme
     const state = getState() as AppState
     const st = state.statements.currentStatement
     dispatch(deleteStatement(st))
-    //axios.delete(`statements/delete/${st.id}`)
+    axios.delete(`statements/delete/${st.id}`)
 })
 
 //Slice
@@ -158,7 +148,7 @@ export const statementSlice = createSlice({
             state.currentStatement = st
         })
         .addCase(createStatement.fulfilled, (state, action) => {
-            const st: StatementType = action.payload
+            const st: StatementType = {...action.payload, type: 'statement'}
             const ind: number = state.statements.map(el => el.id).indexOf(st.id)
 
             state.currentStatement = st
