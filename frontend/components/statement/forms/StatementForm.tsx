@@ -58,6 +58,7 @@ function StatementForm({onSubmit, statement, doSubmit}: Props){
     return (<Flex
         mt='2'
         p='2'
+        direction={'column'}
     >
         <FormControl>
             <Stack>
@@ -75,6 +76,9 @@ function StatementForm({onSubmit, statement, doSubmit}: Props){
                 )}
             </Stack>
         </FormControl>
+        <p>
+            { JSON.stringify(statement.use_statements) }
+        </p>
     </Flex>)
 }
 

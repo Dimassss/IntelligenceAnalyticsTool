@@ -20,7 +20,6 @@ export const createChart = ({key, useCache = true}) => {
 
     charts[key] = {
         events: {},
-        mode: "pointer",
         state: {
             nodes: {},
             selectedNode: null,
@@ -100,7 +99,7 @@ export const createChart = ({key, useCache = true}) => {
         const builder = chart.config.edgeBuilders[target.node.type]
 
         const edges = sources.map(source => {
-            return builder(target, source)
+            return builder(source, target)
         }).filter(el => el !== undefined)
 
         return edges
@@ -212,24 +211,35 @@ export const createChart = ({key, useCache = true}) => {
             .attr('width', chart.config.width)
             .attr('height', chart.config.height)
 
-        chart.plot.bg = chart.plot.svg.append('rect')
+        chart.plot.bg = chart.plot.svg.selectAll('rect#bg').data([1]).join('rect')
             .attr('fill', chart.config.bgColor)
             .attr('width', '100%')
             .attr('height', '100%')
+            .attr('id', 'bg')
 
-        chart.plot.edges = chart.plot.svg.append('g').attr('class', 'edges')
-        chart.plot.vertixes = chart.plot.svg.append('g').attr('class', "vertixes")
+        chart.plot.edges = chart.plot.svg.selectAll('g.edges').data([1]).join('g').attr('class', 'edges')
+        chart.plot.vertixes = chart.plot.svg.selectAll('g.vertixes').data([1]).join('g').attr('class', "vertixes")
+
+        chart.plot.edges.selectAll('g')
+            .data(Object.keys(chart.state.edges))
+            .join('g')
+            .attr('class', nodeType => nodeType)
 
         for(let nodeType in chart.state.edges){
             const edges = chart.state.edges[nodeType]
-            const selection = chart.plot.edges.append('g').attr('class', nodeType)
+            const selection = chart.plot.edges.select(`g.${nodeType}`)
 
             chart.config.edgeDrawers[nodeType](selection, edges, chart)
         }
+
+        chart.plot.vertixes.selectAll('g')
+            .data(Object.keys(chart.state.vertixes))
+            .join('g')
+            .attr('class', nodeType => nodeType)
         
         for(let nodeType in chart.state.vertixes){
             const vertixes = chart.state.vertixes[nodeType]
-            const selection = chart.plot.vertixes.append('g').attr('class', nodeType)
+            const selection = chart.plot.vertixes.select(`g.${nodeType}`)
 
             chart.config.vertixDrawers[nodeType](selection, vertixes, chart)
         }
@@ -279,7 +289,6 @@ export const createChart = ({key, useCache = true}) => {
                 [nodeType]
                 .filter(target => chart.config.isNodeSourceOfTarget[target.type](target, node))
                 .forEach(target => {
-                    console.log(target)
                     rebuildEdgesOfNode(target)
 
                     let edgesSel = chart.plot.edges.select(`g.${target.type}`)

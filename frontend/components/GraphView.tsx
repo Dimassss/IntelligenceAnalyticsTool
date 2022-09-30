@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react"
-import * as d3 from 'd3'
 import { StatementType } from "../types/model/Statement";
-import { createChart } from "../lib/chart/graph/graph-chart";
 import { createGraphChartView } from "../lib/chart/graph/graph-chart-view";
+import { NodeType } from "../types/chart/graph/graph";
 
 /*
     vertix is point on screen which represents node;
@@ -12,6 +11,7 @@ import { createGraphChartView } from "../lib/chart/graph/graph-chart-view";
 
 
 type Props = {
+    mode: string,
     chartKey?: number,
     statements: StatementType[],
     width: number,
@@ -19,10 +19,12 @@ type Props = {
     selectedNode: StatementType,
     previewedNode: StatementType,
     onPreviewedNode?: (node?: StatementType) => void,
-    onSelectNode?: (node?: StatementType) => void
+    onSelectNode?: (node?: StatementType) => void,
+    onLinkMake?: (source: NodeType, target: NodeType) => void
 }
 
 export default function GraphView({ 
+    mode,
     chartKey, 
     statements, 
     width = 1, 
@@ -30,11 +32,13 @@ export default function GraphView({
     selectedNode,
     previewedNode,
     onPreviewedNode = () => {},
-    onSelectNode = () => {}
+    onSelectNode = () => {},
+    onLinkMake = () => {}
 }: Props){
     const divRef = useRef()
-    const chart = createGraphChartView({
+    const chartProps = {
         key: chartKey,
+        mode,
         useCache: true,
         width,
         height,
@@ -43,8 +47,10 @@ export default function GraphView({
         },
         onDblClickNode: (e, node) => {
             onSelectNode(node as StatementType)
-        }
-    })
+        },
+        onLinkMake
+    }
+    let [chart, setChart] = useState(createGraphChartView(chartProps))
 
     useEffect(() => {
         if(divRef.current === undefined) return;
@@ -78,6 +84,12 @@ export default function GraphView({
 
         chart.previewStatement(previewedNode).draw(divRef.current);
     }, [previewedNode])
+
+    useEffect(() => {
+        createGraphChartView(chartProps)
+            .changeMode(mode)
+            .draw(divRef.current);
+    }, [mode])
 
     return (<div ref={divRef} style={{display: 'block', height, width}}/>)
 }

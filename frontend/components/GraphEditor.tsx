@@ -5,9 +5,11 @@ import { useSelector } from "react-redux"
 import { getAllStatements } from '../store/statementSlice'
 import { FaLocationArrow, FaShareAlt } from 'react-icons/fa'
 import GraphView from './GraphView'
+import { useState } from 'react'
 
 
-export default function GraphEditor({width = 0, height = 0, onSelectNode, onPreviewNode, selectedNode, previewedNode}) {
+export default function GraphEditor({width = 0, height = 0, onSelectNode, onPreviewNode, onLinkMake, selectedNode, previewedNode}) {
+    const [mode, setMode] = useState('pointer')
     const list = useSelector(getAllStatements)
 
     const onSelectNodeHandler = (node) => {
@@ -29,20 +31,24 @@ export default function GraphEditor({width = 0, height = 0, onSelectNode, onPrev
                     <IconButton 
                         icon={<FaLocationArrow/>}
                         aria-label="Ponter"  
-                        variant-color="green" 
+                        colorScheme={mode == 'pointer' ? "blue" : null}
                         rounded="0" 
                         roundedBottomRight='md'
-                        onClick={() => {}}
+                        onClick={() => {
+                            setMode('pointer')
+                        }}
                         w="100%"
                     />
 
                     <IconButton 
                         icon={<FaShareAlt/>}
-                        aria-label="Ponter"  
-                        variant-color="green" 
+                        aria-label="Pointer"  
+                        colorScheme={mode == 'edge-editing' ? "blue" : null}
                         rounded="0" 
                         roundedBottomRight='md'
-                        onClick={() => {}}
+                        onClick={() => {
+                            setMode('edge-editing')
+                        }}
                         w="100%"
                     />
                 </Flex>
@@ -54,8 +60,10 @@ export default function GraphEditor({width = 0, height = 0, onSelectNode, onPrev
                     height={graphConf.height}
                     onPreviewedNode={onPreviewNodeHandler}
                     onSelectNode={onSelectNodeHandler}
+                    onLinkMake={onLinkMake}
                     selectedNode={selectedNode && selectedNode.id ? selectedNode : null}
                     previewedNode={previewedNode}
+                    mode={mode}
                 />
             </GridItem>
         </Grid>

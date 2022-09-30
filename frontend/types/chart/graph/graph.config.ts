@@ -81,7 +81,6 @@ export type ChartPlotType = {
 }
 
 export type ChartType = {
-    mode: "pointer",
     state: ChartStateType,
     plot?: ChartPlotType,
     events?: {[key: string]: any}, //this is object for storing states of events
