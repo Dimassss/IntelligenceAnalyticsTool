@@ -2,10 +2,11 @@ import * as d3 from 'd3'
 import debounce from 'lodash.debounce';
 
 import { EdgeType, NodeType, VertixType } from "../../../types/chart/graph/graph";
-import { VertixToNodeIndexMapType } from '../../../types/chart/graph/graph.config';
+import { ChartType } from '../../../types/chart/graph/graph.config';
 import { d3Selection } from '../../../types/global';
 import { StatementType } from "../../../types/model/Statement";
 import { createChart } from "./graph-chart";
+
 
 const createStatementVertixBuilder = (onClickNode, onDblClickNode) => {
     const onClickEventHandler = debounce((e, node) => {
@@ -58,7 +59,8 @@ const createStatementEdgeBuilder = () => {
 }
 
 const createStatementVertixDrawer = () => {
-    return (selection: d3Selection, vertixes: VertixType[]) => {
+
+    const drawAll = (selection: d3Selection, vertixes: VertixType[], chart: ChartType) => {
         const nodesSel = selection.select('g.nodes').node()
             ? selection.select('g.nodes')
             : selection.append('g').attr('class', 'nodes')
@@ -81,6 +83,12 @@ const createStatementVertixDrawer = () => {
             .attr('transform', d => `rotate(-90 ${d.x} ${d.y})`)
             .on('click', null)
             .on('click', (e, d) => d.onClick(e, d.node))
+            .on('mousedown', (e, d) => {
+                chart.events.moveNode = d.node
+            })
+            .on('mouseup', (e, d) => {
+                chart.events.moveNode = null
+            })
 
         nodesSel.selectAll('circle')
             .data(vertixes)
@@ -90,6 +98,8 @@ const createStatementVertixDrawer = () => {
             .attr('cy', d => d.y)
             .attr('fill', d => d.fill)
     }
+
+    return drawAll
 }
 
 const createStatementEdgeDrawer = () => {
@@ -134,6 +144,7 @@ const createStatementEdgeDrawer = () => {
                     .attr('x2', d => d.pointer.x2)
                     .attr('y2', d => d.pointer.y2)
                     .attr('stroke', d => d.pointer.stroke)
+                    .attr('stroke-width', 4)
         }
 
     }
@@ -153,6 +164,34 @@ const createStatementVertixSourceGetters = () => {
         return sources
     }
 }
+
+const createSvgDrawer = () => {
+    return (
+        chart: ChartType
+    ) => {
+        chart.events.moveNode = null    //here is stored node, which is currently moving
+
+        chart.plot.svg
+            .on('mousemove', (e) => {
+                if(chart.events.moveNode) {
+                    const x = e.offsetX;
+                    const y = e.offsetY;
+                    
+                    chart.updateNode(chart.events.moveNode, {x, y})
+                }
+            })
+            .on('mouseleave', (e) => {
+                chart.events.moveNode = null
+            })
+    }
+}
+
+const isNodeSourceOfTarget = {
+    statement: (target, source) => {
+        return target.use_statements.indexOf(source.id) > -1
+    }
+}
+
 
 
 type Props = {
@@ -192,6 +231,7 @@ export function createGraphChartView({
         edgeDrawers: {
             statement: createStatementEdgeDrawer()
         },
+        svgDrawer: createSvgDrawer(),
         vertixes: {
             statement: {
                 radius: {
@@ -200,7 +240,8 @@ export function createGraphChartView({
                     previewed: 20
                 }
             }
-        }
+        },
+        isNodeSourceOfTarget
     })
 
     const c = {

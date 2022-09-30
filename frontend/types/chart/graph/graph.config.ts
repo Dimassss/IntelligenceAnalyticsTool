@@ -31,7 +31,7 @@ export type ChartConfigType = {
     },
     vertixDrawers: {
         //adds customized properties to selection, from customiezed vertix
-        [nodeType: string]: (vertixSelection: d3Selection, vertixes: VertixType[]) => void
+        [nodeType: string]: (vertixSelection: d3Selection, vertixes: VertixType[], chart: ChartType) => void
     },
     vertixSourcesGetters: {
         [nodeType: string]: (
@@ -44,11 +44,16 @@ export type ChartConfigType = {
     },
     edgeDrawers: {
         [nodeType: string]: (
-            edgeSelection: d3Selection,
-            edges: {
-                [targetNodeId: string]: EdgeType[]
-            }
-        ) => void
+                edgeSelection: d3Selection,
+                edges: {
+                    [targetNodeId: string]: EdgeType[]
+                }, 
+                chart: ChartType
+            ) => void
+    },
+    svgDrawer: (chart: ChartType) => void,
+    isNodeSourceOfTarget: {
+        [targetNodeType: string]: (target: NodeType, source: NodeType) => boolean
     }
 }
 
@@ -70,24 +75,16 @@ export type ChartStateType = {
 export type ChartPlotType = {
     svg?: d3Selection,
     parentSelection?: d3Selection,
-    vertixes: {
-        [nodeType: string]: d3Selection
-    },
-    edges: {
-        [nodeType: string]: d3Selection
-    },
+    vertixes: d3Selection,
+    edges: d3Selection,
     bg: d3Selection
 }
 
-export type ChartEventsType = {
-    onClickNode: (e, el: NodeType) => void,
-    onDblClickNode : (e, el: NodeType) => void
-}
-
 export type ChartType = {
+    mode: "pointer",
     state: ChartStateType,
     plot?: ChartPlotType,
-    events?: ChartEventsType,
+    events?: {[key: string]: any}, //this is object for storing states of events
     config?: ChartConfigType,
     setConfig?: (config: ChartConfigType) => ChartType,
     dimensions?: ({width, height}) => ChartType,
@@ -102,6 +99,8 @@ export type ChartType = {
     draw?: (parentSelection: d3Selection) => ChartType,
     selectNode?: (node: NodeType) => ChartType,
     parent?: (parentSelection: d3Selection) => ChartType,
-    onClickNode?: (cb: (e, node: NodeType) => void) => ChartType
-    onDblClickNode?: (cb: (e, node: NodeType) => void) => ChartType
+    onClickNode?: (cb: (e, node: NodeType) => void) => ChartType,
+    onDblClickNode?: (cb: (e, node: NodeType) => void) => ChartType,
+    updateNode?: (node: NodeType, coord: {x: number, y: number}) => ChartType,
+    getVertixOfNode?: (node: NodeType) => VertixType
 }
