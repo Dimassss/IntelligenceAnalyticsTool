@@ -8,7 +8,7 @@ import { StatementType } from "../../../types/model/Statement";
 import { createChart } from "./graph-chart";
 
 
-const createStatementVertixBuilder = (mode, onClickNode, onDblClickNode, onLinkMake) => {
+const createStatementVertixBuilder = (mode, onClickNode, onDblClickNode, onEdgeMake) => {
     const onClickEventHandler = {
         'pointer': debounce((e, node, chart) => {
             if(e.detail >= 2){
@@ -26,7 +26,7 @@ const createStatementVertixBuilder = (mode, onClickNode, onDblClickNode, onLinkM
                     chart.events.createEdge.sourceNode = null
                 } else {
                     const targetNode = node
-                    onLinkMake(chart.events.createEdge.sourceNode, targetNode)
+                    onEdgeMake(chart.events.createEdge.sourceNode, targetNode)
                     chart.events.createEdge.sourceNode = null
                 }
             }
@@ -48,10 +48,10 @@ const createStatementVertixBuilder = (mode, onClickNode, onDblClickNode, onLinkM
 }
 
 const createStatementEdgeBuilder = () => {
-    return (source: VertixType, target: VertixType): EdgeType => {
+    return (source: VertixType, target: VertixType, chart: ChartType): EdgeType => {
         const vect = [target.x - source.x, target.y - source.y]
         const edgeLength = Math.hypot(...vect)
-        const pointerPartMaxLength = 10 + target.r //px
+        const pointerPartMaxLength = 15 + target.r //px
         const redPartLengthRatio = Math.min(1, pointerPartMaxLength / edgeLength)
         const pointer = {
             x1: target.x - redPartLengthRatio * vect[0],
@@ -115,6 +115,12 @@ const createStatementVertixDrawer = (mode) => {
             })
             .on('mouseup', (e, d) => {
                 chart.events.moveNode = null
+            })
+            .on('mouseover', (e, d) => {
+                chart.events.deleteEdgeDisabled = true
+            })
+            .on('mouseleave', (e, d) => {
+                chart.events.deleteEdgeDisabled = false
             })
     }
 
@@ -184,30 +190,80 @@ const createStatementVertixSourceGetters = () => {
     }
 }
 
-const createSvgDrawer = (mode) => {
+const createSvgDrawer = (mode, onEdgeDelete) => {
     return (
         chart: ChartType
     ) => {
         chart.events.moveNode = null    //here is stored node, which is currently moving
         chart.events.createEdge = {sourceNode: null, targetNode: null}
+        chart.events.deleteEdge = null
+        chart.events.deleteEdgeDisabled = false
 
         chart.plot.svg
             .on('mousemove', null)
             .on('mouseleave', null)
+            .on('click', null)
             .on('mousemove', (e) => {
+                const x = e.offsetX;
+                const y = e.offsetY;
+
                 if(chart.events.moveNode && mode == 'pointer') {
-                    const x = e.offsetX;
-                    const y = e.offsetY;
-                    
                     chart.updateNode(chart.events.moveNode, {x, y})
                 } else if(mode == 'edge-editing') {
+                    // Calculating possible edge to delete
+                    chart.events.deleteEdge = null
+
+                    if(!chart.events.createEdge.sourceNode) {
+                        let minDistanceNodeIndex: [string, string, string] = [null, null, null]   //[nodeType, targetNodeId, i]
+                        let minDistance = chart.config.width + chart.config.height + 1
+
+                        for(let nodeType in chart.state.edges) {
+                            for(let targetNodeId in chart.state.edges[nodeType]) {
+                                for(let i in chart.state.edges[nodeType][targetNodeId]) {
+                                    const p = chart.state.edges[nodeType][targetNodeId][i].pointer
+                                    const dist = Math.hypot(x - (p.x1 + p.x2) / 2, y - (p.y1 + p.y2) / 2)
+
+                                    if(dist < minDistance) {
+                                        minDistance = dist
+                                        minDistanceNodeIndex = [nodeType, targetNodeId, i]
+                                    }
+                                }
+                            }
+                        }
+
+                        const nodeType = minDistanceNodeIndex[0]
+                        const targetNodeId = minDistanceNodeIndex[1]
+                        const i = minDistanceNodeIndex[2]
+
+                        const edge = minDistanceNodeIndex && minDistance < 30 && !chart.events.deleteEdgeDisabled
+                            ? chart.state.edges[nodeType][targetNodeId][i]
+                            : null
+
+                            
+                        chart.plot.edges.select('g.pointers')
+                            .select(`g.statementLine-${targetNodeId}`)
+                            .selectAll('line')
+                            .data(chart.state.edges[nodeType][targetNodeId])
+                            .join('line')
+                            .attr('stroke', d => edge 
+                                                    && edge.target.node.id == d.target.node.id 
+                                                    && edge.source.node.id == d.source.node.id 
+                                                ? 'rgba(200,0,0,150)' 
+                                                : d.pointer.stroke
+                            )
+                            .attr('stroke-width', 4)
+
+                        chart.events.deleteEdge = edge
+                    }
+                    
+                    // Drawing new edge
                     let uncreatedEdgeSelection = chart.plot.svg.select('g.uncreated-edge-selection')
 
                     if(chart.events.createEdge.sourceNode) {
                         let source = chart.getVertixOfNode(chart.events.createEdge.sourceNode)
                         let target = chart.getVertixOfNode(chart.events.createEdge.targetNode)
 
-                        if(!target) target = {...target, x: e.offsetX, y: e.offsetY}
+                        if(!target) target = {...target, x, y}
                         const edge = {
                             x1: source.x,
                             y1: source.y,
@@ -247,6 +303,16 @@ const createSvgDrawer = (mode) => {
             .on('mouseleave', (e) => {
                 chart.events.moveNode = null
             })
+            .on('click', (e) => {
+                if(mode == 'edge-editing'){
+                    // Delete edge
+                    if(chart.events.deleteEdge) {
+                        const edge = chart.events.deleteEdge
+                        onEdgeDelete(edge.source.node, edge.target.node)
+                        chart.events.deleteEdge = null
+                    }
+                }
+            })
 
         chart.plot.svg.selectAll('g.uncreated-edge-selection')
             .data([1])
@@ -265,11 +331,11 @@ const isNodeSourceOfTarget = {
     }
 }
 
-let chartConfig = (mode, onClickNode, onDblClickNode, onLinkMake, width, height) => ({
+let chartConfig = (mode, onClickNode, onDblClickNode, onEdgeMake, onEdgeDelete, width, height) => ({
     width, 
     height,
     vertixBuilders: {
-        statement: createStatementVertixBuilder(mode, onClickNode, onDblClickNode, onLinkMake)
+        statement: createStatementVertixBuilder(mode, onClickNode, onDblClickNode, onEdgeMake)
     },
     vertixDrawers: {
         statement: createStatementVertixDrawer(mode)
@@ -283,7 +349,7 @@ let chartConfig = (mode, onClickNode, onDblClickNode, onLinkMake, width, height)
     edgeDrawers: {
         statement: createStatementEdgeDrawer()
     },
-    svgDrawer: createSvgDrawer(mode),
+    svgDrawer: createSvgDrawer(mode, onEdgeDelete),
     vertixes: {
         statement: {
             radius: {
@@ -306,7 +372,8 @@ type Props = {
     height: number,
     onClickNode: (e, node: NodeType) => void,
     onDblClickNode: (e, node: NodeType) => void,
-    onLinkMake: (source: NodeType, target: NodeType) => void
+    onEdgeMake: (source: NodeType, target: NodeType) => void,
+    onEdgeDelete: (source: NodeType, target: NodeType) => void,
 }
 
 export function createGraphChartView({
@@ -317,10 +384,11 @@ export function createGraphChartView({
     height,
     onClickNode,
     onDblClickNode,
-    onLinkMake
+    onEdgeMake,
+    onEdgeDelete
 }: Props) {
     const chart = createChart({key, useCache})
-    chart.setConfig(chartConfig(mode, onClickNode, onDblClickNode, onLinkMake, width, height))
+    chart.setConfig(chartConfig(mode, onClickNode, onDblClickNode, onEdgeMake, onEdgeDelete, width, height))
 
     const c = {
         data(statements){
@@ -341,7 +409,7 @@ export function createGraphChartView({
             return c
         },
         changeMode(mode) {
-            chart.setConfig(chartConfig(mode, onClickNode, onDblClickNode, onLinkMake, width, height))
+            chart.setConfig(chartConfig(mode, onClickNode, onDblClickNode, onEdgeMake, onEdgeDelete, width, height))
             return c
         },
     }

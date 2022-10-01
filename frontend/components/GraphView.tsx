@@ -20,7 +20,8 @@ type Props = {
     previewedNode: StatementType,
     onPreviewedNode?: (node?: StatementType) => void,
     onSelectNode?: (node?: StatementType) => void,
-    onLinkMake?: (source: NodeType, target: NodeType) => void
+    onEdgeMake?: (source: NodeType, target: NodeType) => void,
+    onEdgeDelete?: (source: NodeType, target: NodeType) => void,
 }
 
 export default function GraphView({ 
@@ -33,7 +34,8 @@ export default function GraphView({
     previewedNode,
     onPreviewedNode = () => {},
     onSelectNode = () => {},
-    onLinkMake = () => {}
+    onEdgeMake = () => {},
+    onEdgeDelete = () => {}
 }: Props){
     const divRef = useRef()
     const chartProps = {
@@ -48,7 +50,8 @@ export default function GraphView({
         onDblClickNode: (e, node) => {
             onSelectNode(node as StatementType)
         },
-        onLinkMake
+        onEdgeMake,
+        onEdgeDelete
     }
     let [chart, setChart] = useState(createGraphChartView(chartProps))
 

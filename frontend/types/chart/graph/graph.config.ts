@@ -40,7 +40,7 @@ export type ChartConfigType = {
         ) => VertixType[]
     },
     edgeBuilders: {
-        [nodeType: string]: ( source: VertixType, target: VertixType ) => EdgeType
+        [nodeType: string]: ( source: VertixType, target: VertixType, chart: ChartType ) => EdgeType
     },
     edgeDrawers: {
         [nodeType: string]: (

@@ -8,7 +8,7 @@ import GraphView from './GraphView'
 import { useState } from 'react'
 
 
-export default function GraphEditor({width = 0, height = 0, onSelectNode, onPreviewNode, onLinkMake, selectedNode, previewedNode}) {
+export default function GraphEditor({width = 0, height = 0, onSelectNode, onPreviewNode, onEdgeMake, onEdgeDelete, selectedNode, previewedNode}) {
     const [mode, setMode] = useState('pointer')
     const list = useSelector(getAllStatements)
 
@@ -60,7 +60,8 @@ export default function GraphEditor({width = 0, height = 0, onSelectNode, onPrev
                     height={graphConf.height}
                     onPreviewedNode={onPreviewNodeHandler}
                     onSelectNode={onSelectNodeHandler}
-                    onLinkMake={onLinkMake}
+                    onEdgeMake={onEdgeMake}
+                    onEdgeDelete={onEdgeDelete}
                     selectedNode={selectedNode && selectedNode.id ? selectedNode : null}
                     previewedNode={previewedNode}
                     mode={mode}

@@ -68,9 +68,14 @@ export default function Home() {
             setPreviewStatement(node)
           }}
           onSelectNode={selectNode}
-          onLinkMake={(source: StatementType, target: StatementType) => {
+          onEdgeMake={(source: StatementType, target: StatementType) => {
             const node: StatementType = {...target, use_statements: [...target.use_statements, source.id]}
-            console.log('save statement')
+            
+            dispatch(saveStatement(node) as any)
+          }}
+          onEdgeDelete={(source: StatementType, target: StatementType) => {
+            const node: StatementType = {...target, use_statements: target.use_statements.filter(el => el != source.id)}
+            
             dispatch(saveStatement(node) as any)
           }}
         />

@@ -99,7 +99,7 @@ export const createChart = ({key, useCache = true}) => {
         const builder = chart.config.edgeBuilders[target.node.type]
 
         const edges = sources.map(source => {
-            return builder(source, target)
+            return builder(source, target, chart)
         }).filter(el => el !== undefined)
 
         return edges
