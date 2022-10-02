@@ -1,98 +1,96 @@
-import { useEffect, useRef, useState } from "react"
-import { StatementType } from "../types/model/Statement";
-import { createGraphChartView } from "../lib/chart/graph/graph-chart-view";
-import { NodeType } from "../types/chart/graph/graph";
+//import { NodeType } from "../types/chart/graph/graph";
 
 /*
     vertix is point on screen which represents node;
     node is record from database
 */
 
+type NodeType = {
+    id?: number,
+    type?: string
+}
 
+export type VertixComponentType = {x: number, y: number, r:number, type: string, node: NodeType}
+export type EdgeComponentType = {source: VertixType, target: VertixType}
+
+export type VertixType = {
+    x: number,
+    y: number,
+    r: number,
+    node: NodeType
+};
+
+export type EdgeType = {
+    source: {
+        type: string,       //node type
+        id: number          //node id
+    },
+    target: {
+        type: string,       //node type
+        id: number          //node id
+    }
+}
 
 type Props = {
-    mode: string,
-    chartKey?: number,
-    statements: StatementType[],
+    edges: {
+        [nodeType: string]: EdgeType[]
+    },
+    vertixes: {
+        [nodeType: string]: {
+            [nodeId: string]: VertixType
+        }
+    },
+    VertixComponent: (P: VertixComponentType) => JSX.Element, //Component<{x: number, y: number, node: NodeType}>
+    EdgeComponent: (P: EdgeComponentType) => JSX.Element, //Component<{source: coordType, target: coordType}>
     width: number,
     height: number,
-    selectedNode: StatementType,
-    previewedNode: StatementType,
-    onPreviewedNode?: (node?: StatementType) => void,
-    onSelectNode?: (node?: StatementType) => void,
-    onEdgeMake?: (source: NodeType, target: NodeType) => void,
-    onEdgeDelete?: (source: NodeType, target: NodeType) => void,
+    onPlotMouseMove: (e) => void,
+    onPlotMouseLeave: (e) => void,
+    onClick: (e) => void
 }
 
 export default function GraphView({ 
-    mode,
-    chartKey, 
-    statements, 
+    VertixComponent,
+    EdgeComponent,
+    edges,
+    vertixes,
     width = 1, 
     height = 1,
-    selectedNode,
-    previewedNode,
-    onPreviewedNode = () => {},
-    onSelectNode = () => {},
-    onEdgeMake = () => {},
-    onEdgeDelete = () => {}
+    onPlotMouseLeave,
+    onPlotMouseMove,
+    onClick
 }: Props){
-    const divRef = useRef()
-    const chartProps = {
-        key: chartKey,
-        mode,
-        useCache: true,
-        width,
-        height,
-        onClickNode: (e, node) => {
-            onPreviewedNode(node as StatementType)
-        },
-        onDblClickNode: (e, node) => {
-            onSelectNode(node as StatementType)
-        },
-        onEdgeMake,
-        onEdgeDelete
-    }
-    let [chart, setChart] = useState(createGraphChartView(chartProps))
+    const bgColor = '#3a105f';
 
-    useEffect(() => {
-        if(divRef.current === undefined) return;
+    return (<svg width={width} height={height} onMouseLeave={onPlotMouseLeave} onMouseMove={onPlotMouseMove} onClick={onClick}>
+        <rect fill={bgColor} x={0} y={0} width={width} height={height}/>
+        <g id="edges">
+            {Object.keys(edges).map(nodeType => {
+                if(!edges[nodeType]) return <></>
 
-        chart.data(statements)
-            .selectStatement(selectedNode)
-            .previewStatement(previewedNode)
-            .draw(divRef.current);
-    }, [])
+                return edges[nodeType].map(edge => {
+                    const source = vertixes[edge.source.type][edge.source.id]
+                    const target = vertixes[edge.target.type][edge.target.id]
 
-    useEffect(() => {
-        if(divRef.current === undefined) return;
+                    let keySource = `${edge.source.type} ${edge.source.id}`
+                    let keyTarget = `${edge.target.type} ${edge.target.id}`
 
-        chart.draw(divRef.current);
-    }, [width, height, statements, selectedNode, previewedNode])
+                    const key = `${keySource} ${keyTarget}`
 
-    useEffect(() => {
-        if(divRef.current === undefined) return;
+                    return (<EdgeComponent source={source} target={target} key={key}/>)
+                })
+            })}
+        </g>
+        <g id="vertixes">
+            {Object.keys(vertixes).map(nodeType => {
+                const nodeIds = Object.keys(vertixes[nodeType])
+                return nodeIds.map(nodeId => {
+                    const v = vertixes[nodeType][nodeId]
+                    let key = `${nodeType} ${v.node.id}`
 
-        chart.data(statements).draw(divRef.current);
-    }, [statements])
-
-    useEffect(() => {
-        if(divRef.current === undefined) return;
-
-        chart.selectStatement(selectedNode).draw(divRef.current);
-    }, [selectedNode])
-
-    useEffect(() => {
-        if(divRef.current === undefined) return;
-
-        chart.previewStatement(previewedNode).draw(divRef.current);
-    }, [previewedNode])
-
-    useEffect(() => {
-        createGraphChartView(chartProps)
-            .changeMode(mode)
-            .draw(divRef.current);
-    }, [mode])
-
-    return (<div ref={divRef} style={{display: 'block', height, width}}/>)
+                    return (<VertixComponent x={v.x} y={v.y} r={v.r} node={v.node} type={nodeType} key={key}/>)
+                })
+            })}
+        </g>
+    </svg>)
 }

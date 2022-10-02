@@ -163,7 +163,10 @@ export const statementSlice = createSlice({
         })
         .addCase(saveStatement.fulfilled, (state, action) => {
             const st = action.payload
-            state.currentStatement = st
+
+            if(state.currentStatement && state.currentStatement.id == st.id){
+                state.currentStatement = st
+            }
 
             if(st && st.id) {
                 const ind = state.statements.map(el => el.id).indexOf(st.id)
@@ -174,7 +177,9 @@ export const statementSlice = createSlice({
                 }
             }
         })
-        .addCase(deleteCurrentStatement.fulfilled, (state, action) => {})
+        .addCase(deleteCurrentStatement.fulfilled, (state, action) => {
+            state.currentStatement = null
+        })
     }
 });
 

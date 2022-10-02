@@ -38,7 +38,7 @@ export default function Home() {
 
   useEffect(() => {
     setGraphConf({
-      width: window.innerWidth * 8 / 12,
+      width: window.innerWidth * 8 / 12 - 10,
       height: window.innerHeight - 400
     })
 
@@ -60,22 +60,13 @@ export default function Home() {
     <Grid templateColumns='repeat(12, 1fr)' gap={2}>
       <GridItem colSpan={8}>
         <GraphEditor
-          width={graphConf.width}
-          height={graphConf.height}
           selectedNode={selectedStatement}
           previewedNode={previewStatement}
           onPreviewNode={(node) => {
             setPreviewStatement(node)
           }}
           onSelectNode={selectNode}
-          onEdgeMake={(source: StatementType, target: StatementType) => {
-            const node: StatementType = {...target, use_statements: [...target.use_statements, source.id]}
-            
-            dispatch(saveStatement(node) as any)
-          }}
-          onEdgeDelete={(source: StatementType, target: StatementType) => {
-            const node: StatementType = {...target, use_statements: target.use_statements.filter(el => el != source.id)}
-            
+          onUpdateNode={(node: StatementType) => {
             dispatch(saveStatement(node) as any)
           }}
         />
