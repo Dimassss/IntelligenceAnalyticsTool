@@ -23,7 +23,6 @@ export default function Home() {
   const lastId = useSelector(getLastId)
   const [doSubmitStatementForm, setDoSubmitStatementForm] = useState(false)
   const [previewStatement, setPreviewStatement] = useState(null as StatementType)
-  const [graphConf, setGraphConf] = useState({width:1, height: 1})
   const [openHelpWindow, setOpenHelpWindow] = useState(false)
   
   let selectNode = (node: StatementType) => {
@@ -37,11 +36,6 @@ export default function Home() {
   }
 
   useEffect(() => {
-    setGraphConf({
-      width: window.innerWidth * 8 / 12 - 10,
-      height: window.innerHeight - 400
-    })
-
     dispatch(loadNewStatements(lastId) as any)
   }, [])
 

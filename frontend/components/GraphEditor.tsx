@@ -185,8 +185,8 @@ export default function GraphEditor({onSelectNode, onPreviewNode, selectedNode, 
             if(selectedNode && st.id == selectedNode.id) r = 25
 
             const vertix = {
-                x: Math.random() * (dimensions.width - margins.left - margins.right) + margins.left, 
-                y: Math.random() * (dimensions.height - margins.bottom - margins.top) + margins.top,
+                x: Math.max(0, Math.random() * (dimensions.width - margins.left - margins.right) + margins.left), 
+                y: Math.max(0, Math.random() * (dimensions.height - margins.bottom - margins.top) + margins.top),
                 r,
                 node: st
             }

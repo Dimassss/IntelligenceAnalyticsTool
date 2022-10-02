@@ -76,9 +76,6 @@ function StatementForm({onSubmit, statement, doSubmit}: Props){
                 )}
             </Stack>
         </FormControl>
-        <p>
-            { JSON.stringify(statement.use_statements) }
-        </p>
     </Flex>)
 }
 
