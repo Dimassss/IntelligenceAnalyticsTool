@@ -10,11 +10,11 @@ import { StatementType } from '../types/model/Statement'
 
 
 
-export default function GraphEditor({onSelectNode, onPreviewNode, selectedNode, previewedNode, onUpdateNode}) {
+export default function GraphEditor({onSelectNode, onPreviewNode, selectedNode, previewedNode, onUpdateNode, statements = []}) {
     const margins = {top: 20, left: 20, right: 20, bottom: 20}
     
     const divRef = useRef(null)
-    const statements = useSelector(getAllStatements)
+    // const statements = useSelector(getAllStatements)
     const [mode, setMode] = useState('pointer')
     const [dimensions, setDimenstions] = useState({width: 1, height: 1})
 
@@ -218,7 +218,7 @@ export default function GraphEditor({onSelectNode, onPreviewNode, selectedNode, 
         if(!divRef) return;
 
         const width = divRef.current.offsetWidth
-        const height = Math.max(divRef.current.offsetHeight, window.innerHeight - 400)
+        const height = Math.floor(Math.max(width * (9/16), divRef.current.offsetHeight))
 
         setDimenstions({width, height})
     }, [divRef])

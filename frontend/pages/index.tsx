@@ -1,4 +1,4 @@
-import { Text, IconButton, Flex } from '@chakra-ui/react'
+import { Text, IconButton, Flex, Tabs, TabList, Tab, TabPanels, TabPanel, Box, Spacer, Switch } from '@chakra-ui/react'
 import { Grid, GridItem } from '@chakra-ui/react'
 import { useSelector, useDispatch } from "react-redux"
 import { useEffect, useRef, useState } from 'react'
@@ -18,7 +18,8 @@ import GraphEditor from '../components/GraphEditor';
 
 export default function Home() {
   const dispatch = useDispatch()
-  const list = useSelector(getAllStatements)
+  const allStatements = useSelector(getAllStatements)
+  const [statementList, setStatementList] = useState([] as StatementType[])
   const selectedStatement = useSelector(getCurrentStatement)
   const lastId = useSelector(getLastId)
   const [doSubmitStatementForm, setDoSubmitStatementForm] = useState(false)
@@ -63,6 +64,7 @@ export default function Home() {
           onUpdateNode={(node: StatementType) => {
             dispatch(saveStatement(node) as any)
           }}
+          statements={statementList}
         />
       </GridItem>
       <GridItem colSpan={4}>
@@ -130,31 +132,107 @@ export default function Home() {
         }
       </GridItem>
       <GridItem colSpan={8}>
-        <Grid templateColumns='repeat(12, 1fr)' gap={2}>
-          {list.map((item: StatementType) => (
-            <GridItem 
-              onClick={
-                debounce(e => {
-                  if(e.detail >= 2) {
-                    selectNode(item)
-                  } else {
-                    setPreviewStatement(item);
+        <Tabs>
+          <TabList>
+            <Tab>All</Tab>
+            <Tab>Workspace</Tab>
+          </TabList>
+
+          <TabPanels>
+            <TabPanel>
+              <Grid templateColumns='repeat(12, 1fr)' gap={2}>
+                {allStatements.map((item: StatementType) => (
+                    <GridItem 
+                      onClick={
+                        debounce(e => {
+                          if(e.detail >= 2) {
+                            selectNode(item)
+                          } else {
+                            setPreviewStatement(item);
+                          }
+                        }, 150, true)
+                      }
+                      colSpan={4} 
+                      key={item.id} 
+                      p={2} 
+                      className={[
+                        styles['statement-tile'], 
+                        previewStatement && previewStatement.id == item.id ? styles['previewed'] : undefined, 
+                        selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
+                      ].filter(el => el).join(' ')}
+                    >
+                      <Flex>
+                        <Box>
+                          <p>{item.name}</p>
+                        </Box>
+                        <Spacer/>
+                        <div onClick={e => e.stopPropagation()}>
+                          <Switch
+                            isChecked={!!statementList.find(el => el.id == item.id)}
+                            colorScheme={"green"}
+                            onChange={(e) => {
+                              if(!e.target.checked) {
+                                const l = statementList.filter(el => el.id !== item.id)
+                                setStatementList(l)
+                              } else {
+                                const l = [item, ...statementList]
+                                setStatementList(l)
+                              }
+                            }}
+                          />
+                        </div>
+                      </Flex>
+                    </GridItem>))
                   }
-                }, 150, true)
-              }
-              colSpan={4} 
-              key={item.id} 
-              p={2} 
-              className={[
-                styles['statement-tile'], 
-                previewStatement && previewStatement.id == item.id ? styles['previewed'] : undefined, 
-                selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
-              ].filter(el => el).join(' ')}
-            >
-              <p>{item.name}</p>
-            </GridItem>))
-          }
-        </Grid>
+              </Grid>
+            </TabPanel>
+            <TabPanel>
+              <Grid templateColumns='repeat(12, 1fr)' gap={2}>
+                {statementList.map((item: StatementType) => (
+                    <GridItem 
+                      onClick={
+                        debounce(e => {
+                          if(e.detail >= 2) {
+                            selectNode(item)
+                          } else {
+                            setPreviewStatement(item);
+                          }
+                        }, 150, true)
+                      }
+                      colSpan={4} 
+                      key={item.id} 
+                      p={2} 
+                      className={[
+                        styles['statement-tile'], 
+                        previewStatement && previewStatement.id == item.id ? styles['previewed'] : undefined, 
+                        selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
+                      ].filter(el => el).join(' ')}
+                    >
+                      <Flex>
+                        <Box>
+                          <p>{item.name}</p>
+                        </Box>
+                        <Spacer/>
+                        <div onClick={e => e.stopPropagation()}>
+                          <Switch
+                            defaultChecked
+                            colorScheme={"green"}
+                            onChange={(e) => {
+                              if(!e.target.checked) {
+                                setStatementList(statementList.filter(el => el.id !== item.id))
+                              } else {
+                                setStatementList([item, ...statementList])
+                              }
+                            }}
+                          />
+                        </div>
+                      </Flex>
+                    </GridItem>))
+                  }
+                </Grid>
+            </TabPanel>
+          </TabPanels>
+        </Tabs>
       </GridItem>
       <GridItem colSpan={4}>
         {
