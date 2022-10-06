@@ -56,7 +56,6 @@ export const saveStatement = createAsyncThunk('statements/saveStatement', async 
 })
 
 export const deleteStatement = createAsyncThunk('statements/deleteStatement', async (st: StatementType, { getState, dispatch }) => {
-    const state = getState() as AppState
     dispatch(deleteStatementFromList(st))
     axios.delete(`statements/delete/${st.id}`)
 })
