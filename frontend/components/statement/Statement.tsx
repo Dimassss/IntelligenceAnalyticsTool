@@ -11,7 +11,6 @@ type Props = {
 
 export default function Statement({ statement: st }: Props){
     return (<Box key={st.id} border-width="1px" rounded="md" m='1' p='2' minW="250px" maxW="400px" flexGrow='1' boxShadow="1px 1px #eee">
-                <Link href={`statement/view/${st.id}`}>
                 <div>
                     <Heading size='md'>
                     { st.name }
@@ -22,6 +21,5 @@ export default function Statement({ statement: st }: Props){
                     </Flex>
                     <Text>{ cutStatementText(st.statement) } </Text>
                 </div>
-                </Link>
             </Box>)
 }

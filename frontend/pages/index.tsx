@@ -2,51 +2,67 @@ import { Text, IconButton, Flex, Tabs, TabList, Tab, TabPanels, TabPanel, Box, S
 import { Grid, GridItem } from '@chakra-ui/react'
 import { useSelector, useDispatch } from "react-redux"
 import { useEffect, useRef, useState } from 'react'
-import debounce from 'lodash.debounce';
-
-import styles from '../styles/statement/Statement-tile.module.scss'
 
 import type { StatementType } from '../types/model/Statement'
-import { loadNewStatements, getAllStatements, getLastId, getCurrentStatement, setCurrentStatement, saveStatement, createStatement, deleteCurrentStatement } from '../store/statementSlice'
+import { loadNewStatements, getAllStatements, getLastId, saveStatement, createStatement, deleteStatement, getLastCreatedStatement } from '../store/records/statementSlice'
 import Statement from '../components/statement/Statement'
 import StatementForm from '../components/statement/forms/StatementForm'
 import { FaLocationArrow, FaPlus, FaQuestion, FaRegSave, FaShareAlt, FaTrash } from 'react-icons/fa'
 import { timeToString } from '../lib/formating'
 import HelpWindow from '../components/HelpWindow';
-import GraphEditor from '../components/GraphEditor';
+import GraphEditor from '../components/graph/GraphEditor';
+import SubworkpaceTabs from '../components/workspace/subworkspace/SubworkspaceTabs';
+import { getPreviewedRecord, getSelectedRecord, RecordType, setPreviewedRecord, setRecords, setSelectedRecord, updateRecord } from '../store/recordsSlice';
+import { State } from 'swr/dist/types';
 
 
 export default function Home() {
   const dispatch = useDispatch()
-  const allStatements = useSelector(getAllStatements)
-  const [statementList, setStatementList] = useState([] as StatementType[])
-  const selectedStatement = useSelector(getCurrentStatement)
+  const statements = useSelector(getAllStatements)
+  const selectedRecord = useSelector(getSelectedRecord)
+  const previewedRecord = useSelector(getPreviewedRecord)
   const lastId = useSelector(getLastId)
+  const lastCreatedStatement = useSelector(getLastCreatedStatement)
   const [doSubmitStatementForm, setDoSubmitStatementForm] = useState(false)
-  const [previewStatement, setPreviewStatement] = useState(null as StatementType)
   const [openHelpWindow, setOpenHelpWindow] = useState(false)
   
-  let selectNode = (node: StatementType) => {
-    dispatch(setCurrentStatement(node))
-  }
   let removeNode = () => {
-    dispatch(deleteCurrentStatement() as any)
-    if(previewStatement && previewStatement.id == selectedStatement.id) {
-      setPreviewStatement(null)
+    if(selectedRecord[0] == 'statement') {
+      dispatch(deleteStatement(selectedRecord[1] as StatementType) as any)
     }
+
+    dispatch(setSelectedRecord(null))
+
+    if(previewedRecord && previewedRecord[0] == selectedRecord[0] && previewedRecord[1].id == selectedRecord[1].id) {
+      dispatch(setPreviewedRecord(null))
+    }
+  }
+
+  let selectRecord = (recordType, r: RecordType) => {
+    dispatch(setSelectedRecord([recordType, r]))
   }
 
   useEffect(() => {
     dispatch(loadNewStatements(lastId) as any)
   }, [])
 
+  useEffect(() => {
+    dispatch(setRecords({statement: statements}))
+  }, [statements])
+
+  useEffect(() => {
+    if(lastCreatedStatement) {
+      dispatch(setSelectedRecord(['statement', lastCreatedStatement]))
+    }
+  }, [lastCreatedStatement])
+
   const onStatementFormSubmit = (st: StatementType) => {
-    const stWithType = {...st, type: 'statement'}
     setDoSubmitStatementForm(false)
+
     if(st.id === undefined){
-      dispatch(createStatement(stWithType) as any)
+      dispatch(createStatement(st) as any)
     } else {
-      dispatch(saveStatement(stWithType) as any)
+      dispatch(saveStatement(st) as any)
     }
   }
 
@@ -55,16 +71,13 @@ export default function Home() {
     <Grid templateColumns='repeat(12, 1fr)' gap={2}>
       <GridItem colSpan={8}>
         <GraphEditor
-          selectedNode={selectedStatement}
-          previewedNode={previewStatement}
-          onPreviewNode={(node) => {
-            setPreviewStatement(node)
+          onUpdateNode={(nodeType, node: StatementType) => {
+            console.log(nodeType, 'here', node)
+            if(nodeType == 'statement') {
+              dispatch(saveStatement(node) as any)
+            }
+            dispatch(updateRecord([nodeType, node]))
           }}
-          onSelectNode={selectNode}
-          onUpdateNode={(node: StatementType) => {
-            dispatch(saveStatement(node) as any)
-          }}
-          statements={statementList}
         />
       </GridItem>
       <GridItem colSpan={4}>
@@ -76,14 +89,15 @@ export default function Home() {
                 variant-color="green" 
                 rounded="0" 
                 roundedBottomRight='md'
-                onClick={() => selectNode({
+                onClick={() => selectRecord('statement',{
                   name: '',
                   veracity: 0,
                   statement: '',
-                  use_statements: []
+                  use_statements: [],
+                  created_at: Date.now()
                 })}
             />
-            {selectedStatement 
+            {selectedRecord
               ? (<>
                 <IconButton 
                     icon={<FaRegSave/>}
@@ -93,14 +107,17 @@ export default function Home() {
                     roundedBottomRight='md'
                     onClick={() => setDoSubmitStatementForm(true)}
                   />
-                <IconButton 
-                    icon={<FaTrash/>}
-                    aria-label="Delete Node"  
-                    variant-color="green" 
-                    rounded="0" 
-                    roundedBottomRight='md'
-                    onClick={() => removeNode()}
-                  />
+                {'id' in selectedRecord[1] 
+                  ? (<IconButton 
+                      icon={<FaTrash/>}
+                      aria-label="Delete Node"  
+                      variant-color="green" 
+                      rounded="0" 
+                      roundedBottomRight='md'
+                      onClick={() => removeNode()}
+                    />)
+                  : ''
+                }
               </>)
               : ('')
             }
@@ -119,126 +136,26 @@ export default function Home() {
           </Flex>
         </Flex>
 
-        {selectedStatement 
+        {selectedRecord
           ? (<>
-              <Text ml='2' color="grey">{ timeToString(selectedStatement.created_at) }</Text>
+              <Text ml='2' color="grey">{ timeToString(selectedRecord[1].created_at) }</Text>
               <StatementForm 
                 onSubmit={onStatementFormSubmit} 
                 doSubmit={doSubmitStatementForm} 
-                statement={selectedStatement}
+                statement={selectedRecord[1] as StatementType}
               />
             </>)
           : (<p>Select node with double click or create new one with plus button.</p>)
         }
       </GridItem>
       <GridItem colSpan={8}>
-        <Tabs>
-          <TabList>
-            <Tab>All</Tab>
-            <Tab>Workspace</Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
-              <Grid templateColumns='repeat(12, 1fr)' gap={2}>
-                {allStatements.map((item: StatementType) => (
-                    <GridItem 
-                      onClick={
-                        debounce(e => {
-                          if(e.detail >= 2) {
-                            selectNode(item)
-                          } else {
-                            setPreviewStatement(item);
-                          }
-                        }, 150, true)
-                      }
-                      colSpan={4} 
-                      key={item.id} 
-                      p={2} 
-                      className={[
-                        styles['statement-tile'], 
-                        previewStatement && previewStatement.id == item.id ? styles['previewed'] : undefined, 
-                        selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
-                      ].filter(el => el).join(' ')}
-                    >
-                      <Flex>
-                        <Box>
-                          <p>{item.name}</p>
-                        </Box>
-                        <Spacer/>
-                        <div onClick={e => e.stopPropagation()}>
-                          <Switch
-                            isChecked={!!statementList.find(el => el.id == item.id)}
-                            colorScheme={"green"}
-                            onChange={(e) => {
-                              if(!e.target.checked) {
-                                const l = statementList.filter(el => el.id !== item.id)
-                                setStatementList(l)
-                              } else {
-                                const l = [item, ...statementList]
-                                setStatementList(l)
-                              }
-                            }}
-                          />
-                        </div>
-                      </Flex>
-                    </GridItem>))
-                  }
-              </Grid>
-            </TabPanel>
-            <TabPanel>
-              <Grid templateColumns='repeat(12, 1fr)' gap={2}>
-                {statementList.map((item: StatementType) => (
-                    <GridItem 
-                      onClick={
-                        debounce(e => {
-                          if(e.detail >= 2) {
-                            selectNode(item)
-                          } else {
-                            setPreviewStatement(item);
-                          }
-                        }, 150, true)
-                      }
-                      colSpan={4} 
-                      key={item.id} 
-                      p={2} 
-                      className={[
-                        styles['statement-tile'], 
-                        previewStatement && previewStatement.id == item.id ? styles['previewed'] : undefined, 
-                        selectedStatement && selectedStatement.id == item.id ? styles['selected'] : undefined
-                      ].filter(el => el).join(' ')}
-                    >
-                      <Flex>
-                        <Box>
-                          <p>{item.name}</p>
-                        </Box>
-                        <Spacer/>
-                        <div onClick={e => e.stopPropagation()}>
-                          <Switch
-                            defaultChecked
-                            colorScheme={"green"}
-                            onChange={(e) => {
-                              if(!e.target.checked) {
-                                setStatementList(statementList.filter(el => el.id !== item.id))
-                              } else {
-                                setStatementList([item, ...statementList])
-                              }
-                            }}
-                          />
-                        </div>
-                      </Flex>
-                    </GridItem>))
-                  }
-                </Grid>
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
+        <SubworkpaceTabs />
       </GridItem>
       <GridItem colSpan={4}>
         {
-          !previewStatement 
+          !previewedRecord
           ? ('')
-          : (<Statement statement={previewStatement} />) 
+          : (<Statement statement={previewedRecord[1] as StatementType} />) 
         }
       </GridItem>
     </Grid>

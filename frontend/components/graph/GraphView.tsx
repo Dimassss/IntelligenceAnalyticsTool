@@ -62,8 +62,8 @@ export default function GraphView({
 }: Props){
     const bgColor = '#3a105f';
 
-    return (<svg width={width} height={height} onMouseLeave={onPlotMouseLeave} onMouseMove={onPlotMouseMove} onClick={onClick}>
-        <rect fill={bgColor} x={0} y={0} width={width} height={height}/>
+    return (<svg viewBox={`0 0 1920 1080`} width={width} height={height} onMouseLeave={onPlotMouseLeave} onMouseMove={onPlotMouseMove} onClick={onClick}>
+        <rect fill={bgColor} x={0} y={0} width={1920} height={1080}/>
         <g id="edges">
             {Object.keys(edges).map(nodeType => {
                 if(!edges[nodeType]) return <></>
