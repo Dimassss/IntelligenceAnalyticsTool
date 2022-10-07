@@ -10,6 +10,7 @@ urlpatterns = [
     path('save/', views.save_workspace),
     path('get/list/', views.get_workspaces),
     path('get/<int:pk>/', views.get_workspace),                                 # get workspace with id=pk
+    path('get/<int:pk>/subworkspaces', views.get_workspace_subworkspaces),      # get all subworkspaces of workspace with id=pk
     path('create/subworkspace/', views.create_subworkspace),                    # create subworkspace
     path('save/subworkspace/', views.save_subworkspace),                        # save subworkspace
     path('delete/subworkspace/<int:pk>', views.delete_subworkspace),            # delete subworkspace with id=pk

@@ -128,3 +128,11 @@ def delete_subworkspace(request, pk):
     subworkspace.delete()
 
     return Response(SubworkspaceSerializer(subworkspace).data)
+
+
+# /get/<int:pk>/subworkspaces
+@api_view(["GET"])
+def get_workspace_subworkspaces(request, pk):
+    subworkspaces = Subworkspace.objects.all().filter(workspace_id__id = pk).order_by('-id')
+
+    return Response([SubworkspaceSerializer(sw).data for sw in subworkspaces])

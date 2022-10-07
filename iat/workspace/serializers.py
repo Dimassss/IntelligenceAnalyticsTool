@@ -50,17 +50,15 @@ class SubworkspaceSerializer(serializers.Serializer):
     id = serializers.IntegerField(required=False)
     created_at = serializers.DateTimeField(read_only=True)
     title = serializers.CharField(max_length=120)
-    description = serializers.CharField()
     used_statements = serializers.SlugRelatedField(many=True, slug_field='id', queryset=Statement.objects.all(), default=[])
     workspace_id = serializers.SlugRelatedField(many=False, slug_field='id', queryset=Workspace.objects.all())
 
     def create(self, validated_data):
         title = validated_data["title"]
-        description = validated_data["description"]
         used_statements = validated_data["used_statements"]
         workspace_id = validated_data["workspace_id"]
 
-        w = Subworkspace(title=title, description=description, workspace_id=workspace_id)
+        w = Subworkspace(title=title, workspace_id=workspace_id)
 
         if 'id' in validated_data:
             w.id = validated_data['id']
@@ -72,11 +70,9 @@ class SubworkspaceSerializer(serializers.Serializer):
 
     def update(self, instance, validated_data):
         title = validated_data["title"]
-        description = validated_data["description"]
         used_statements = validated_data["used_statements"]
 
         instance.title = title
-        instance.description = description
         instance.used_statements.set(used_statements)
 
         return instance

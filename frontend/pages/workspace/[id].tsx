@@ -14,15 +14,19 @@ import GraphEditor from '../../components/graph/GraphEditor';
 import SubworkpaceTabs from '../../components/workspace/subworkspace/SubworkspaceTabs';
 import { getPreviewedRecord, getSelectedRecord, RecordType, setPreviewedRecord, setRecords, setSelectedRecord, updateRecord } from '../../store/recordsSlice';
 import { State } from 'swr/dist/types';
+import { getCurrentWorkspace, loadNewWorkspaces, loadWorkspace } from '../../store/workspaceSlice'
+import { useRouter } from 'next/router'
 
 
 export default function WorkspacePage() {
   const dispatch = useDispatch()
+  const router = useRouter()
   const statements = useSelector(getAllStatements)
   const selectedRecord = useSelector(getSelectedRecord)
   const previewedRecord = useSelector(getPreviewedRecord)
   const lastId = useSelector(getLastId)
   const lastCreatedStatement = useSelector(getLastCreatedStatement)
+  const workspace = useSelector(getCurrentWorkspace)
   const [doSubmitStatementForm, setDoSubmitStatementForm] = useState(false)
   const [openHelpWindow, setOpenHelpWindow] = useState(false)
   
@@ -44,7 +48,12 @@ export default function WorkspacePage() {
 
   useEffect(() => {
     dispatch(loadNewStatements(lastId) as any)
-  }, [])
+    
+    if(!isNaN(+router.query.id)) {
+      dispatch(loadWorkspace(router.query.id) as any)
+    }
+
+  }, [router.query.id])
 
   useEffect(() => {
     dispatch(setRecords({statement: statements}))

@@ -2,15 +2,6 @@ import { AppState } from "./store";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
 import axios from '../plugins/axios'
 
-export interface SubworkspaceType {
-    id?: number,
-    created_at?: string,
-    title: string,
-    description: string,
-    used_statements: number[],
-    workspace_id: number
-}
-
 export interface WorkspaceType {
     id?: number,
     created_at?: string,
@@ -43,12 +34,36 @@ export const loadNewWorkspaces = createAsyncThunk('workspaces/loadNewWorkspaces'
     let res = await axios.get(url)
 
     let workspaces: WorkspaceType[] = res.data
-    workspaces = [...workspaces, ...state.workspaces.workspaces]
+    workspaces = [...workspaces, ...state.workspaces.workspaces].sort(
+        (a,b) => (new Date(a.created_at)).getTime() - (new Date(b.created_at)).getTime()
+    )
     
     lastId = Math.min(...workspaces.map(el => el.id))
 
     dispatch(setWorkspaces(workspaces))
     dispatch(setLastId(lastId))
+})
+
+export const loadWorkspace = createAsyncThunk('workspaces/getWorkspace', async (id: any, { getState, dispatch }) => {
+    /*
+        Load next array of elements startion from lastId up to 20 elements
+    */
+    const state = getState() as AppState
+    const url = `workspace/get/${id}/`
+    
+    let res = await axios.get(url)
+
+    let workspace: WorkspaceType = res.data
+
+    if(!state.workspaces.workspaces.find(el => el.id == workspace.id)){
+        let workspaces = [workspace, ...state.workspaces.workspaces].sort(
+            (a,b) => (new Date(a.created_at)).getTime() - (new Date(b.created_at)).getTime()
+        )
+    
+        dispatch(setWorkspaces(workspaces))
+    }
+
+    dispatch(setCurrentWorkspace(workspace))
 })
 
 export const deleteWorkspace = createAsyncThunk("workspaces/deleteWorkspace", async (id: number, { getState, dispatch }) => {
@@ -115,4 +130,4 @@ export const {
 } = workspacesSlice.actions
 
 export const getWorkspaces = (state: AppState) => state.workspaces.workspaces
-export const getSelectedRecord = (state: AppState) => state.workspaces.currentWorkspace
+export const getCurrentWorkspace = (state: AppState) => state.workspaces.currentWorkspace
