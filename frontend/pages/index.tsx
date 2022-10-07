@@ -1,51 +1,90 @@
-import { Flex, Button, Box, Heading, Progress, Text } from '@chakra-ui/react'
-import Link from 'next/link'
-import { useSelector, useDispatch } from "react-redux"
-import { useEffect } from 'react'
+import { Box, Button, Flex, Heading, IconButton, Spacer, Text } from "@chakra-ui/react"
+import Link from "next/link"
+import { useRouter } from "next/router"
+import { useEffect, useState } from "react"
+import { FaArrowRight, FaPlus } from "react-icons/fa"
+import { useDispatch } from "react-redux"
+import { useSelector } from "react-redux"
+import WorkspaceForm from "../components/workspace/WorkspaceForm"
+import WorkspaceFormTile from "../components/workspace/WorkspaceFormTIle"
+import WorkspaceTile from "../components/workspace/WorkspaceTile"
+import { deleteWorkspace, getWorkspaces, loadNewWorkspaces, saveWorkspace, WorkspaceType } from "../store/workspaceSlice"
 
-import { timeToString, cutStatementText } from '../lib/formating' 
-import type { Statement } from '~~/types/model/Statement'
-import { loadNewStatements, getAllStatements, getLastId } from '../store/statementSlice'
 
-export default function Home() {
-  const dispatch = useDispatch()
-  const list = useSelector(getAllStatements)
-  const lastId = useSelector(getLastId)
+export default function Home(){
+    const dispatch = useDispatch()
+    const router = useRouter()
+    const workspaces = useSelector(getWorkspaces)
+    const [ws, setWS] = useState(null as WorkspaceType)
+    const [doSubmit, setDoSubmit] = useState(false)
 
-  useEffect(() => {
-    dispatch(loadNewStatements(lastId) as any)
-  }, [])
+    useEffect(() => {
+        dispatch(loadNewWorkspaces() as any)
+    }, [])
 
-  return (
-    <Flex m='1' align="stretch" flexWrap="wrap">
-      <Flex align="center" justify="center" minW="200px" p='2'>
-          <Link href="statement/create">
-              <Button variant-color="green">Create</Button>
-          </Link>
-      </Flex>
-    
-      {list.map((item: Statement) => 
-        (<Box key={item.id} border-width="1px" rounded="md" m='1' p='2' minW="250px" maxW="400px" flexGrow='1' boxShadow="1px 1px #eee">
-            <Link href={`statement/view/${item.id}`}>
-              <div>
-                <Heading size='md'>
-                  { item.name }
-                </Heading>
-                <Progress value={item.veracity} size='sm'/>
-                <Flex color="grey" fontSize="xs">
-                  { timeToString(item.created_at) }
-                </Flex>
-                <Text>{ cutStatementText(item.statement) } </Text>
-              </div>
-            </Link>
-        </Box>)
-      )}
+    return (<Flex m="3" wrap={"wrap"}>
+        <IconButton
+            m={2}
+            alignSelf={"center"}
+            colorScheme='green'
+            aria-label='Create new workspace'
+            icon={<FaPlus/>}
+            onClick={e => {
+                setWS({
+                    title: '',
+                    description: ''
+                })
+            }}
+        />
+        {
+            !ws || 'id' in ws 
+                ? ''
+                : (<WorkspaceFormTile 
+                    workspace={ws}
+                    onCancel={() => setWS(null)}
+                    onSubmit={(workspace) => {
+                        setWS(null)
+                        dispatch(saveWorkspace(workspace) as any)
+                    }}
+                />)
+        }
+        {
+            workspaces.map(w => {
+                if(ws && ws.id == w.id) {
+                    return (<WorkspaceFormTile 
+                        workspace={ws}
+                        onCancel={() => setWS(null)}
+                        onSubmit={(workspace) => {
+                            setWS(null)
+                            dispatch(saveWorkspace(workspace) as any)
+                        }}
+                    />)
+                }
 
-      <Flex align="center" justify="center" minW="200px" p='2'>
-          <Button variant-color="green" onClick={() => dispatch(loadNewStatements(lastId) as any)}>
-              Load New Statements
-          </Button>
-      </Flex>
-    </Flex>
-  )
+                return (<WorkspaceTile 
+                    key={w.id}
+                    workspace={w}
+                    onDblClick={e => {
+                        router.push(`workspace/${w.id}`)
+                    }}
+                    onDelete={e => {
+                        dispatch(deleteWorkspace(w.id) as any)
+                    }}
+                    onEdit={e => {
+                        setWS(w)
+                    }}
+                />)
+            })
+        }
+        <IconButton
+            m={2}
+            alignSelf={"center"}
+            colorScheme='green'
+            aria-label='Load new workspaces'
+            onClick={e => {
+                dispatch(loadNewWorkspaces() as any)
+            }}
+            icon={<FaArrowRight/>}
+        />
+    </Flex>)
 }
