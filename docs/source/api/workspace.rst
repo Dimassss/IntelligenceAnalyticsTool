@@ -6,8 +6,8 @@ object which store, which statenets are used currently in this subworkspace.
 You can add or remove from subworkspace statements.
 
 
-CRUD Methods for Statement model
-================================
+CRUD Methods for Workspace and Subworkspace model
+=================================================
 
 Create
 ------
