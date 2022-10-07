@@ -81,7 +81,6 @@ export default function WorkspacePage() {
       <GridItem colSpan={8}>
         <GraphEditor
           onUpdateNode={(nodeType, node: StatementType) => {
-            console.log(nodeType, 'here', node)
             if(nodeType == 'statement') {
               dispatch(saveStatement(node) as any)
             }

@@ -16,13 +16,17 @@ export default function SubworkpaceTabs(){
     const router = useRouter()
     const subworkspaces = useSelector(getSubworkspaces)
     const [timeouts, setTimeouts] = useState(null as [string, number, NodeJS.Timeout])      //[type, id, clearTimeoutId]
-    const [tabIndex, setTabIndex] = useState(0)
+    const [tabIndex, setTabIndex] = useState(-1)
 
     useEffect(() => {
         if(!isNaN(+router.query.id)){
             dispatch(loadSubworkspaces(router.query.id) as any)
         }
     },  [router.query.id])
+
+    useEffect(() => {
+        dispatch(setUsedRecords([]))
+    }, [])
     
     return (
         <Tabs variant='enclosed' colorScheme='green' index={tabIndex} onChange={i => setTabIndex(i)}>

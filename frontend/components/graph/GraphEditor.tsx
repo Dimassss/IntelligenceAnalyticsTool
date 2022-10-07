@@ -3,7 +3,7 @@ import { Grid, GridItem } from '@chakra-ui/react'
 import { useSelector } from "react-redux"
 
 import { getAllStatements } from '../../store/records/statementSlice'
-import { FaLocationArrow, FaShareAlt } from 'react-icons/fa'
+import { FaHome, FaLocationArrow, FaShareAlt } from 'react-icons/fa'
 import GraphView, { EdgeComponentType, EdgeType, VertixComponentType, VertixType } from './GraphView'
 import { useEffect, useRef, useState } from 'react'
 import { StatementType } from '../../types/model/Statement'
@@ -11,10 +11,12 @@ import { getPreviewedRecord, getRecords, getSelectedRecord, getUsedRecords, Reco
 import { VertixComponentFactory } from '../../lib/components/graph/VertixComponentFabric'
 import { EdgeComponentFabric } from '../../lib/components/graph/EdgeComponentFabric'
 import { GraphEngine } from '../../lib/components/graph/GraphEngine'
+import { useRouter } from 'next/router'
 
 
 
 export default function GraphEditor({onUpdateNode}) {
+    const router = useRouter()
     const margins = {top: 20, left: 20, right: 20, bottom: 20}
     const [graphEngine, setGraphEngine] = useState(new GraphEngine({
             margins
@@ -169,6 +171,18 @@ export default function GraphEditor({onUpdateNode}) {
         <Grid templateColumns='repeat(24, 1fr)'>
             <GridItem colSpan={1}>
                 <Flex direction={'column'}>
+                    <IconButton 
+                        icon={<FaHome/>}
+                        aria-label="Go home page"  
+                        colorScheme={"green"}
+                        rounded="0" 
+                        onClick={() => {
+                            router.push('/')
+                        }}
+                        w="100%"
+                        mb={10}
+                    />
+
                     <IconButton 
                         icon={<FaLocationArrow/>}
                         aria-label="Ponter"  
