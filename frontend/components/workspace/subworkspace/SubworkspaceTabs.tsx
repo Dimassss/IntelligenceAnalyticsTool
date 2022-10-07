@@ -2,7 +2,7 @@ import { Box, Button, Flex, Grid, GridItem, IconButton, Input, Spacer, Switch, T
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { getAllStatements } from "../../../store/records/statementSlice";
-import { getRecords, getRecordsOrder, setPreviewedRecord, setSelectedRecord } from "../../../store/recordsSlice";
+import { getRecords, getRecordsOrder, setPreviewedRecord, setSelectedRecord, setUsedRecords } from "../../../store/recordsSlice";
 import { StatementType } from "../../../types/model/Statement";
 import { BiX } from "react-icons/bi";
 import SubworkpacePanel from "./SubworkspacePanel";
@@ -14,8 +14,9 @@ import { FaPlus } from "react-icons/fa";
 export default function SubworkpaceTabs(){
     const dispatch = useDispatch()
     const router = useRouter()
-    const [timeouts, setTimeouts] = useState(null as [string, number, NodeJS.Timeout])      //[type, id, clearTimeoutId]
     const subworkspaces = useSelector(getSubworkspaces)
+    const [timeouts, setTimeouts] = useState(null as [string, number, NodeJS.Timeout])      //[type, id, clearTimeoutId]
+    const [tabIndex, setTabIndex] = useState(0)
 
     useEffect(() => {
         if(!isNaN(+router.query.id)){
@@ -24,7 +25,7 @@ export default function SubworkpaceTabs(){
     },  [router.query.id])
     
     return (
-        <Tabs variant='enclosed' colorScheme='green'>
+        <Tabs variant='enclosed' colorScheme='green' index={tabIndex} onChange={i => setTabIndex(i)}>
             <TabList 
                 style={{
                     overflow: "hidden",
@@ -48,6 +49,8 @@ export default function SubworkpaceTabs(){
                         }
 
                         dispatch(saveSubworkspace(sw) as any)
+                        dispatch(setUsedRecords([]))
+                        setTabIndex(0)
                     }}
                 />
                 <Flex style={{
@@ -66,6 +69,14 @@ export default function SubworkpaceTabs(){
                                     minWidth={"150"}
                                     key={sw.id}
                                     pr={0.5}
+                                    onClick={e => {
+                                            const usedRecords = [];
+
+                                            usedRecords.push(...sw.used_statements.map(st_id => ({type: 'statement', id:st_id})))
+
+                                            dispatch(setUsedRecords(usedRecords))
+                                        }
+                                    }
                                 >
                                     <Flex>
                                         <span style={{
@@ -84,6 +95,8 @@ export default function SubworkpaceTabs(){
                                             onClick={e => {
                                                 e.stopPropagation()
                                                 dispatch(deleteSubworkspace(sw.id) as any)
+                                                dispatch(setUsedRecords([]))
+                                                setTabIndex(-1)
                                             }}
                                         />
                                     </Flex>
@@ -113,6 +126,7 @@ export default function SubworkpaceTabs(){
                                 }}
                             />
                             <SubworkpacePanel
+                                subworkspace={sw}
                                 onClickRecord={{
                                     statement: (e, recordType, record) => {
                                         if(timeouts && recordType == timeouts[0] && record.id == timeouts[1]) {

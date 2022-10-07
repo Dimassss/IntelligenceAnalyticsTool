@@ -3,17 +3,19 @@ import { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
 import { useSelector } from "react-redux";
 import { getPreviewedRecord, getRecords, getRecordsOrder, getSelectedRecord, getUsedRecords, RecordsType, RecordType, setUsedRecords } from "../../../store/recordsSlice";
+import { saveSubworkspace, SubworkspaceType } from "../../../store/workspaces/subworkspaceSlice";
 
 import styles from '../../../styles/statement/Statement-tile.module.scss'
 
 
 type Props = {
+    subworkspace: SubworkspaceType,
     onClickRecord: {
         [recordType: string]: (e, recordType: string, record: RecordType) => void
     }
 }
 
-export default function SubworkpacePanel({onClickRecord}: Props){
+export default function SubworkpacePanel({onClickRecord, subworkspace}: Props){
     const dispatch = useDispatch()
     const usedRecords = useSelector(getUsedRecords)
     const selectedRecord = useSelector(getSelectedRecord)
@@ -30,7 +32,7 @@ export default function SubworkpacePanel({onClickRecord}: Props){
                     const isPreviewed = previewedRecord && previewedRecord[0] == recordType && previewedRecord[1].id == record.id
                     const isSelected = selectedRecord && selectedRecord[0] == recordType && selectedRecord[1].id == record.id
 
-                    const isChecked = usedRecords[recordType] && !!usedRecords[recordType].find(el => el.id == record.id)
+                    const isChecked = !!usedRecords.find(el => el.id == record.id && el.type == recordType)
 
                     return (
                         <GridItem 
@@ -63,6 +65,11 @@ export default function SubworkpacePanel({onClickRecord}: Props){
                                         }
 
                                         dispatch(setUsedRecords(list))
+
+                                        //saving workspace
+                                        const used_statements = list.filter(el => el.type == 'statement').map(el => el.id)
+                                        
+                                        dispatch(saveSubworkspace({...subworkspace, used_statements}) as any)
                                     }}
                                 />
                             </div>
