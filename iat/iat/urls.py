@@ -20,5 +20,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('file-storage/', include('file_storage.urls')),
     path('statements/', include('statements.urls')),
-    path('workspace/', include('workspace.urls')),
 ]

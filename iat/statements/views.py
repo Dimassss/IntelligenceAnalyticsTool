@@ -41,7 +41,7 @@ def get_new_statements(request):
         st_arr = Statement.objects.all().order_by('-id')[:10]
     else:
         pk = int(request.GET.get("last_id"))
-        st_arr = Statement.objects.all().filter(pk__lt = pk).order_by('-id')[:10]
+        st_arr = Statement.objects.filter(pk__lt = pk).order_by('-id')[:10]
     
     st_ser_arr = [StatementSerializer(st).data for st in st_arr]
 

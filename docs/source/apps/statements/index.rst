@@ -1,23 +1,23 @@
-Documentation of statements app
-===============================
+Documentation of file_storage app
+=================================
 
 
 Models
 ------
 
  * Statement: 
-    created_at, name, statement, veracity, use_statements
+    created, statement, veracity
 
 
 Serializers
 -----------
 
- * StatementSerializer:
-    created_at, name, statement, veracity, use_statements
+ * FileMetaDataSerializer:
+    id, created, statement, veracity
 
 
 Statement App interaction
--------------------------
+------------------------
 
 In fact all this project is about creating statements (or using other words - comments) and making
 links between them. Each statement express opinion which is based on/substantiated with data which 

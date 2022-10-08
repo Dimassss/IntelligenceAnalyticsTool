@@ -1,10 +1,7 @@
-export interface StatementType {
+export interface Statement {
     id?: number, 
-    name?: string, 
-    veracity?: number, 
+    name: string, 
+    veracity: number, 
     created_at?: string, 
-    statement?: string,
-    use_statements?: number[],
-
-    type?: string
+    statement: string
 }

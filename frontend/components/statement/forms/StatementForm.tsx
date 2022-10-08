@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { 
     Flex,
     FormControl, 
@@ -12,53 +12,33 @@ import {
     Textarea,
     Button
 } from '@chakra-ui/react'
-import { StatementType } from "../../../types/model/Statement"
+import { Statement } from "../../../types/model/Statement"
 import React from "react"
 import clone from "../../../lib/clone"
 
 type Props = {
-    statement: StatementType,
-    onSubmit: (el?: StatementType) => void,
-    doSubmit?: boolean
+    statement: Statement,
+    onSubmit: (el?: Statement) => void
 }
 
-function StatementForm({onSubmit, statement, doSubmit}: Props){
-    /*
-        doSubmit is boolean value;
-        This value is needed to send signal from parent element to submit form.
-        When this value is true, this element will use hook to automaticly call saveChanges function
-        and as a result onSubmit event will be emited.
-    */
+function StatementForm({onSubmit, statement}: Props){
     let [name, setName] = useState(statement ? statement.name : '')
     let [statementStr, setStatement] = useState(statement ? statement.statement : '')
     let [veracity, setVeracity] = useState(statement ? statement.veracity : 0)
 
     const saveChanges = () => {
-        let st: StatementType = {
+        let st: Statement = {
             ...clone(statement),
             name,
             statement: statementStr,
             veracity
-        } as StatementType
+        } as Statement
         onSubmit(st)
     }
-
-    useEffect(() => {
-        if(doSubmit) {
-            saveChanges()
-        }
-    }, [doSubmit])
-
-    useEffect(() => {
-        setName(statement.name ? statement.name : '')
-        setStatement(statement.statement ? statement.statement : '')
-        setVeracity(statement.veracity ? statement.veracity : 0)
-    }, [statement])
 
     return (<Flex
         mt='2'
         p='2'
-        direction={'column'}
     >
         <FormControl>
             <Stack>
@@ -71,9 +51,7 @@ function StatementForm({onSubmit, statement, doSubmit}: Props){
                     <SliderThumb />
                 </Slider>
                 <Textarea placeholder="Statement body" value={statementStr} onChange={e => setStatement(e.target.value)} rows={15} cols={70}/>
-                {doSubmit !== null ? ('') : (
-                    <Button onClick={saveChanges} variant-color="green">Save Changes</Button>
-                )}
+                <Button onClick={saveChanges} variant-color="green">Save Changes</Button> 
             </Stack>
         </FormControl>
     </Flex>)

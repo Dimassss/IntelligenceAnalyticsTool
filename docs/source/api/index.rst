@@ -6,5 +6,3 @@ API documentation
     :caption: API Contents
 
     file_storage
-    statements
-    workspace

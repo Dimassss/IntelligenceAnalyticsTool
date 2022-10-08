@@ -6,5 +6,3 @@ Documentation of apps in IAT
     :caption: Apps Content
 
     file_storage/index
-    statements/index
-    workspace/index

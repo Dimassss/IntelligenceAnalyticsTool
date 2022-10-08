@@ -1,3 +1,0 @@
- = Add ability to attach statements to the statement.
- - Add ability to upload files or add links on files
- - Add ability to attach files to the statementl 

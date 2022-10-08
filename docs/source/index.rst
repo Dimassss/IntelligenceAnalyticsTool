@@ -1,5 +1,5 @@
 Intelligence Analytics Tool's documentation!
-============================================
+=======================================================
 
 .. toctree::
    :maxdepth: 2
@@ -8,7 +8,6 @@ Intelligence Analytics Tool's documentation!
    philosophy/philosophy
    api/index
    apps/index
-   frontend/index
 
 
 Indices and tables
