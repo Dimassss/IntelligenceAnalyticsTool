@@ -6,7 +6,42 @@ const JWT_TOKEN = 'jwt_token'
 const JWT_REFRESH_TOKEN = 'jwt_refresh_token'
 
 
-//Async thunks
+// Setters
+export const setJwtToken = (token) => {
+    const cookie = useCookie()
+
+    if(token) {
+        cookie.set(JWT_TOKEN, token)
+    } else {
+        cookie.remove(JWT_TOKEN)
+    }
+}
+
+export const setRefreshJwtToken = (token) => {
+    const cookie = useCookie()
+    
+    if(token) {
+        cookie.set(JWT_REFRESH_TOKEN, token)
+    } else {
+        cookie.remove(JWT_REFRESH_TOKEN)
+    }
+}
+
+// Getters
+export const getJwtToken = () => {
+    const cookie = useCookie()
+    return (cookie.has(JWT_TOKEN) ? cookie.get(JWT_TOKEN) : null) as string
+}
+export const getRefreshJwtToken = () => {
+    const cookie = useCookie()
+    return (cookie.has(JWT_REFRESH_TOKEN) ? cookie.get(JWT_REFRESH_TOKEN) : null) as string
+}
+export const isLoggedIn = () => {
+    const cookie = useCookie()
+    return cookie.has(JWT_REFRESH_TOKEN)
+}
+
+//Methods
 export const signIn = async (username, password) => {
     const err: any = {}
 
@@ -28,6 +63,27 @@ export const signIn = async (username, password) => {
 
         err.username = d.username
         err.password = d.password
+        err.general = d.detail ? "Bad login or password" : undefined
+    }
+
+    return err
+}
+
+export const signUp = async (firstName, lastName, email, username, password) => {
+    let err: any = {}
+
+    try {
+        const res = await axios.post("/account/signup/", {first_name: firstName, last_name: lastName, email, username, password})
+
+        if(res.status == 200) {
+            signIn(username, password)
+        } else {
+            err.general = res.statusText
+        }
+    } catch(e) {
+        const d = e.response.data
+
+        err = {...d}
         err.general = d.detail ? "Bad login or password" : undefined
     }
 
@@ -64,40 +120,4 @@ export const logout = async () => {
     setJwtToken(null)
 
     Router.push('/signin')
-}
-
-
-// Setters
-export const setJwtToken = (token) => {
-    const cookie = useCookie()
-
-    if(token) {
-        cookie.set(JWT_TOKEN, token)
-    } else {
-        cookie.remove(JWT_TOKEN)
-    }
-}
-
-export const setRefreshJwtToken = (token) => {
-    const cookie = useCookie()
-    
-    if(token) {
-        cookie.set(JWT_REFRESH_TOKEN, token)
-    } else {
-        cookie.remove(JWT_REFRESH_TOKEN)
-    }
-}
-
-// Getters
-export const getJwtToken = () => {
-    const cookie = useCookie()
-    return (cookie.has(JWT_TOKEN) ? cookie.get(JWT_TOKEN) : null) as string
-}
-export const getRefreshJwtToken = () => {
-    const cookie = useCookie()
-    return (cookie.has(JWT_REFRESH_TOKEN) ? cookie.get(JWT_REFRESH_TOKEN) : null) as string
-}
-export const isLoggedIn = () => {
-    const cookie = useCookie()
-    return cookie.has(JWT_REFRESH_TOKEN)
 }
