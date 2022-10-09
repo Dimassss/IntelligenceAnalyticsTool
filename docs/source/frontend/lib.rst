@@ -13,6 +13,13 @@ clone.ts
 Stores all function which are related to cloning object
 
 
+account.ts
+----------
+Functions which are needed to manage JWT tokens. If you want to log in uer you have to use ``signIn`` func
+and to log out ``logout``  func. In order to refresh token use ``refreshJwtToken`` func. There are also getters and
+setter for jwt token and refresh jwt token.
+
+
 components/graph/EdgeComponentFabric.tsx
 ----------------------------------------
 Here is stored fabric function which return component of edge, which is used in GraphView component to create svg with gprap chart.
