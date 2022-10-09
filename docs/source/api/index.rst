@@ -8,3 +8,4 @@ API documentation
     file_storage
     statements
     workspace
+    account

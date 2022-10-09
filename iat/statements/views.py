@@ -1,15 +1,19 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, authentication_classes, permission_classes
 from rest_framework.parsers import JSONParser
 from .serializers import StatementSerializer
 from .models import Statement
 from django.shortcuts import get_object_or_404
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 #CREATE
 #POST: /statements/create/
 @api_view(["POST"])
 @parser_classes([JSONParser])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_statement(request):
     statement_serializer = StatementSerializer(data = request.data)
 
@@ -28,6 +32,8 @@ def create_statement(request):
 #READ
 #GET: /statements/get/<int:pk>
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_statement(request, pk):
     st = get_object_or_404(Statement, pk = pk)
 
@@ -36,6 +42,8 @@ def get_statement(request, pk):
 
 #GET: /statements/get/list/?last_id=pk
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_new_statements(request):
     if 'last_id' not in request.GET:
         st_arr = Statement.objects.all().order_by('-id')[:10]
@@ -52,6 +60,8 @@ def get_new_statements(request):
 #PUT: /statements/save/
 @api_view(["PUT"])
 @parser_classes([JSONParser])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_statement(request):
     if 'id' not in request.data:
         return Response({
@@ -77,6 +87,8 @@ def update_statement(request):
 #Delete
 #DELETE: /statements/delete/<int:pk>
 @api_view(["DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_statement(request, pk):
     st = get_object_or_404(Statement, pk = pk)
     st.delete()

@@ -1,7 +1,8 @@
-import { ChakraProvider } from '@chakra-ui/react'
+import { ChakraProvider, effect } from '@chakra-ui/react'
 import Head from 'next/head';
 import { wrapper } from "../store/store";
 import '../styles/globals.css'
+
 
 function MyApp({ Component, pageProps }) {
   return (

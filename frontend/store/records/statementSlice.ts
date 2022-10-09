@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { HYDRATE } from "next-redux-wrapper";
-import axios from '../../plugins/axios'
+import axios from '../../plugins/axiosAuth'
 
 import { AppState } from "../store";
 import clone from "../../lib/clone";

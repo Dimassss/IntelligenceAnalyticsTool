@@ -16,6 +16,7 @@ import { getPreviewedRecord, getSelectedRecord, RecordType, setPreviewedRecord, 
 import { State } from 'swr/dist/types';
 import { getCurrentWorkspace, loadNewWorkspaces, loadWorkspace } from '../../store/workspaceSlice'
 import { useRouter } from 'next/router'
+import { DefaultLayer } from '../../layers/default'
 
 
 export default function WorkspacePage() {
@@ -75,7 +76,7 @@ export default function WorkspacePage() {
     }
   }
 
-  return (<>
+  return (<DefaultLayer>
     <HelpWindow toOpen={openHelpWindow} onClose={() => setOpenHelpWindow(false)}/>
     <Grid templateColumns='repeat(12, 1fr)' gap={2}>
       <GridItem colSpan={8}>
@@ -167,6 +168,6 @@ export default function WorkspacePage() {
         }
       </GridItem>
     </Grid>
-  </>)
+  </DefaultLayer>)
 }
 

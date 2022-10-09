@@ -9,6 +9,7 @@ Here is grouped all pages which are related to frontend code organisation
 
     store
     plugins
+    layers
     pages
     lib
     components/index

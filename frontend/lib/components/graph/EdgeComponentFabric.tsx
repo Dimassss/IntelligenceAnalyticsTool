@@ -20,7 +20,7 @@ export function EdgeComponentFabric(selectedEdge){
         }
 
         return <g>
-            <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} strokeWidth={1} stroke={'#000'}/>
+            <line x1={source.x} y1={source.y} x2={target.x} y2={target.y} strokeWidth={1} stroke={'#aaa'}/>
             <line x1={pointer.x} y1={pointer.y} x2={target.x} y2={target.y} strokeWidth={2} stroke={pointer.stroke}/>
         </g>
     }

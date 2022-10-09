@@ -1,15 +1,19 @@
 from django.shortcuts import render
 from rest_framework.response import Response
-from rest_framework.decorators import api_view, parser_classes
+from rest_framework.decorators import api_view, parser_classes, authentication_classes, permission_classes
 from rest_framework.parsers import JSONParser
 from django.shortcuts import get_object_or_404
 from .models import Workspace, Subworkspace
 from .serializers import WorkspaceSerializer, SubworkspaceSerializer
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 # /create/
 @api_view(["POST"])
 @parser_classes([JSONParser])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_workspace(request):
     workspace_serializer = WorkspaceSerializer(data = request.data)
 
@@ -26,6 +30,8 @@ def create_workspace(request):
     
 # /delete/<int:pk>/
 @api_view(["DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_workspace(request, pk):
     workspace = get_object_or_404(Workspace, pk = pk)
     workspace.delete()
@@ -35,6 +41,8 @@ def delete_workspace(request, pk):
     
 # /save/
 @api_view(["PUT"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @parser_classes([JSONParser])
 def save_workspace(request):
     if 'id' not in request.data:
@@ -58,6 +66,8 @@ def save_workspace(request):
     
 # /get/list/?last_id=pk
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_workspaces(request):
     if 'last_id' not in request.GET:
         workspace_arr = Workspace.objects.all().order_by('-id')[:10]
@@ -71,6 +81,8 @@ def get_workspaces(request):
 
 # /get/<int:pk>/ 
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_workspace(request, pk):
     w = get_object_or_404(Workspace, pk=pk)
     
@@ -78,6 +90,8 @@ def get_workspace(request, pk):
 
 # /get/subworkspace/<int:pk>/
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_subworkspace(request, pk):
     sw = get_object_or_404(Subworkspace, pk=pk)
 
@@ -86,6 +100,8 @@ def get_subworkspace(request, pk):
 # /create/subworkspace/ 
 @api_view(["POST"])
 @parser_classes([JSONParser])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_subworkspace(request):
     subworkspace_serializer = SubworkspaceSerializer(data = request.data)
 
@@ -102,6 +118,8 @@ def create_subworkspace(request):
 # /save/subworkspace/
 @api_view(["PUT"])
 @parser_classes([JSONParser])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def save_subworkspace(request):
     if 'id' not in request.data:
         return Response({
@@ -123,6 +141,8 @@ def save_subworkspace(request):
 
 # /delete/subworkspace/<int:pk> 
 @api_view(["DELETE"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_subworkspace(request, pk):
     subworkspace = get_object_or_404(Subworkspace, pk = pk)
     subworkspace.delete()
@@ -132,6 +152,8 @@ def delete_subworkspace(request, pk):
 
 # /get/<int:pk>/subworkspaces
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_workspace_subworkspaces(request, pk):
     subworkspaces = Subworkspace.objects.all().filter(workspace_id__id = pk).order_by('-id')
 

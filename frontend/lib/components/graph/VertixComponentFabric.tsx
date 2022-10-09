@@ -78,6 +78,38 @@ export function VertixComponentFactory({
             setSelectedVertix(!selectedVertix ? {type, id: node.id} : null)
         }
 
+        const strokeColor = () => {
+            if(selectedNode && selectedNode[0] == type && selectedNode[1].id == node.id){
+                return "#555"
+            }
+
+            if(previewedNode && previewedNode[0] == type && previewedNode[1].id == node.id) {
+                return "#555"
+            }
+
+            return "#aaa"
+        }
+
+        const fillColor = () => {
+            if(selectedNode && selectedNode[0] == type && selectedNode[1].id == node.id){
+                return "#fcc"
+            }
+
+            if(previewedNode && previewedNode[0] == type && previewedNode[1].id == node.id) {
+                return "#fee"
+            }
+
+            return "#ddd"
+        }
+
+        const strokeWidth = () => {
+            if(selectedNode && selectedNode[0] == type && selectedNode[1].id == node.id){
+                return 2
+            }
+
+            return 1
+        }
+
         return (<g 
             onMouseDown={e => {
                 if(mode == 'pointer') {
@@ -95,14 +127,14 @@ export function VertixComponentFactory({
                 }
             }}
         >
-            <circle cx={x} cy={y} r={r}/>
+            <circle cx={x} cy={y} r={r} fill={fillColor()} strokeWidth={strokeWidth()} stroke={strokeColor()}/>
             <circle 
                 cx={x} 
                 cy={y} 
-                r={r-2} 
+                r={r-3} 
                 stroke={'red'} 
                 fill={"none"} 
-                strokeWidth={2} 
+                strokeWidth={3} 
                 strokeDasharray={2 * Math.PI * r}
                 strokeDashoffset={2 * Math.PI * r * (3 -  (node as StatementType).veracity / 100)}
             />

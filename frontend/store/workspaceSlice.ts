@@ -1,6 +1,6 @@
 import { AppState } from "./store";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit"
-import axios from '../plugins/axios'
+import axios from '../plugins/axiosAuth'
 
 export interface WorkspaceType {
     id?: number,

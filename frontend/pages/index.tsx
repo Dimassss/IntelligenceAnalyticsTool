@@ -9,6 +9,7 @@ import WorkspaceForm from "../components/workspace/WorkspaceForm"
 import WorkspaceFormTile from "../components/workspace/WorkspaceFormTIle"
 import WorkspaceTile from "../components/workspace/WorkspaceTile"
 import { deleteWorkspace, getWorkspaces, loadNewWorkspaces, saveWorkspace, WorkspaceType } from "../store/workspaceSlice"
+import { DefaultLayer } from "../layers/default"
 
 
 export default function Home(){
@@ -22,36 +23,25 @@ export default function Home(){
         dispatch(loadNewWorkspaces() as any)
     }, [])
 
-    return (<Flex m="3" wrap={"wrap"}>
-        <IconButton
-            m={2}
-            alignSelf={"center"}
-            colorScheme='green'
-            aria-label='Create new workspace'
-            icon={<FaPlus/>}
-            onClick={e => {
-                setWS({
-                    title: '',
-                    description: ''
-                })
-            }}
-        />
-        {
-            !ws || 'id' in ws 
-                ? ''
-                : (<WorkspaceFormTile 
-                    workspace={ws}
-                    onCancel={() => setWS(null)}
-                    onSubmit={(workspace) => {
-                        setWS(null)
-                        dispatch(saveWorkspace(workspace) as any)
-                    }}
-                />)
-        }
-        {
-            workspaces.map(w => {
-                if(ws && ws.id == w.id) {
-                    return (<WorkspaceFormTile 
+    return (<DefaultLayer>
+        <Flex m="3" wrap={"wrap"}>
+            <IconButton
+                m={2}
+                alignSelf={"center"}
+                colorScheme='green'
+                aria-label='Create new workspace'
+                icon={<FaPlus/>}
+                onClick={e => {
+                    setWS({
+                        title: '',
+                        description: ''
+                    })
+                }}
+            />
+            {
+                !ws || 'id' in ws 
+                    ? ''
+                    : (<WorkspaceFormTile 
                         workspace={ws}
                         onCancel={() => setWS(null)}
                         onSubmit={(workspace) => {
@@ -59,32 +49,45 @@ export default function Home(){
                             dispatch(saveWorkspace(workspace) as any)
                         }}
                     />)
-                }
+            }
+            {
+                workspaces.map(w => {
+                    if(ws && ws.id == w.id) {
+                        return (<WorkspaceFormTile 
+                            workspace={ws}
+                            onCancel={() => setWS(null)}
+                            onSubmit={(workspace) => {
+                                setWS(null)
+                                dispatch(saveWorkspace(workspace) as any)
+                            }}
+                        />)
+                    }
 
-                return (<WorkspaceTile 
-                    key={w.id}
-                    workspace={w}
-                    onDblClick={e => {
-                        router.push(`workspace/${w.id}`)
-                    }}
-                    onDelete={e => {
-                        dispatch(deleteWorkspace(w.id) as any)
-                    }}
-                    onEdit={e => {
-                        setWS(w)
-                    }}
-                />)
-            })
-        }
-        <IconButton
-            m={2}
-            alignSelf={"center"}
-            colorScheme='green'
-            aria-label='Load new workspaces'
-            onClick={e => {
-                dispatch(loadNewWorkspaces() as any)
-            }}
-            icon={<FaArrowRight/>}
-        />
-    </Flex>)
+                    return (<WorkspaceTile 
+                        key={w.id}
+                        workspace={w}
+                        onDblClick={e => {
+                            router.push(`workspace/${w.id}`)
+                        }}
+                        onDelete={e => {
+                            dispatch(deleteWorkspace(w.id) as any)
+                        }}
+                        onEdit={e => {
+                            setWS(w)
+                        }}
+                    />)
+                })
+            }
+            <IconButton
+                m={2}
+                alignSelf={"center"}
+                colorScheme='green'
+                aria-label='Load new workspaces'
+                onClick={e => {
+                    dispatch(loadNewWorkspaces() as any)
+                }}
+                icon={<FaArrowRight/>}
+            />
+        </Flex>
+    </DefaultLayer>)
 }
