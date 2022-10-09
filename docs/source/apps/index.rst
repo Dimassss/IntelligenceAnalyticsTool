@@ -8,3 +8,4 @@ Documentation of apps in IAT
     file_storage/index
     statements/index
     workspace/index
+    account/index
